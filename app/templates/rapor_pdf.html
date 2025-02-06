@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Apartman Raporu</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f5f5f5;
+        }
+        h2 {
+            color: #333;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Apartman Yönetim Raporu</h1>
+        <p>{{ baslangic.strftime('%d.%m.%Y') }} - {{ bitis.strftime('%d.%m.%Y') }}</p>
+    </div>
+
+    <h2>Özet Bilgiler</h2>
+    <table>
+        <tr>
+            <th>Toplam Aidat</th>
+            <td>{{ "%.2f"|format(aidat_toplam) }} ₺</td>
+        </tr>
+        <tr>
+            <th>Ödenen Aidat</th>
+            <td>{{ "%.2f"|format(odenen_aidat) }} ₺</td>
+        </tr>
+        <tr>
+            <th>Kalan Aidat</th>
+            <td>{{ "%.2f"|format(aidat_toplam - odenen_aidat) }} ₺</td>
+        </tr>
+        <tr>
+            <th>Toplam Gider</th>
+            <td>{{ "%.2f"|format(gider_toplam) }} ₺</td>
+        </tr>
+        <tr>
+            <th>Bakiye</th>
+            <td>{{ "%.2f"|format(odenen_aidat - gider_toplam) }} ₺</td>
+        </tr>
+    </table>
+
+    <h2>Daire Bazlı Aidat Durumu</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Daire No</th>
+                <th>Toplam Aidat</th>
+                <th>Ödenen</th>
+                <th>Kalan</th>
+                <th>Ödeme Oranı</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for daire in daire_aidatlari %}
+            <tr>
+                <td>{{ daire.daire_no }}</td>
+                <td>{{ "%.2f"|format(daire.toplam_aidat) }} ₺</td>
+                <td>{{ "%.2f"|format(daire.odenen) }} ₺</td>
+                <td>{{ "%.2f"|format(daire.kalan) }} ₺</td>
+                <td>{{ "%.1f"|format(daire.odenen / daire.toplam_aidat * 100 if daire.toplam_aidat > 0 else 0) }}%</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>Gider Kategorileri</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Kategori</th>
+                <th>Toplam Tutar</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for gider in gider_kategorileri %}
+            <tr>
+                <td>{{ gider.kategori|title }}</td>
+                <td>{{ "%.2f"|format(gider.toplam) }} ₺</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

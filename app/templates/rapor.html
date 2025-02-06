@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+
+{% block title %}Raporlar{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" rel="stylesheet">
+<style>
+    .card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+        height: 100%;
+    }
+    
+    .card-header {
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        color: white;
+        border-radius: 15px 15px 0 0 !important;
+        padding: 1rem;
+    }
+
+    .card-body {
+        padding: 20px;
+        min-height: 350px;
+    }
+
+    .filter-section {
+        background: white;
+        padding: 20px;
+        border-radius: 15px;
+        margin-bottom: 20px;
+    }
+    .summary-card {
+        text-align: center;
+        padding: 20px;
+    }
+    .summary-card i {
+        font-size: 2rem;
+        margin-bottom: 10px;
+        color: #1e3c72;
+    }
+    .summary-value {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #2C3E50;
+    }
+    .chart-wrapper {
+        position: relative;
+        height: 300px;
+        width: 100%;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Özet Kartları -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card summary-card">
+                <i class="fas fa-money-bill-wave"></i>
+                <h6>Toplam Aidat</h6>
+                <div class="summary-value">{{ "%.2f"|format(toplam_aidat) }} ₺</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card summary-card">
+                <i class="fas fa-check-circle"></i>
+                <h6>Ödenen Aidat</h6>
+                <div class="summary-value">{{ "%.2f"|format(odenen_aidat) }} ₺</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card summary-card">
+                <i class="fas fa-file-invoice"></i>
+                <h6>Toplam Gider</h6>
+                <div class="summary-value">{{ "%.2f"|format(toplam_gider) }} ₺</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card summary-card">
+                <i class="fas fa-balance-scale"></i>
+                <h6>Bakiye</h6>
+                <div class="summary-value">{{ "%.2f"|format(odenen_aidat - toplam_gider) }} ₺</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Grafikler -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Aidat/Gider Grafiği</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-wrapper">
+                        <canvas id="aidatGiderChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Gider Dağılımı</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-wrapper">
+                        {% if gider_kategori_list %}
+                            <canvas id="giderDagilimChart"></canvas>
+                        {% else %}
+                            <div class="text-center py-5">
+                                <i class="fas fa-info-circle fa-3x text-muted mb-3"></i>
+                                <h5 class="text-muted">Henüz Gider Kaydı Bulunmuyor</h5>
+                                <p class="text-muted">Gider ekledikten sonra burada dağılım grafiği görüntülenecektir.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PDF İndirme Butonu -->
+    <div class="text-end mt-4 mb-4">
+        <a href="{{ url_for('rapor.rapor_pdf', baslangic_tarihi=baslangic.strftime('%Y-%m-%d'), 
+                          bitis_tarihi=bitis.strftime('%Y-%m-%d'), daire_no=daire_no, kategori=kategori) }}" 
+           class="btn btn-danger">
+            <i class="fas fa-file-pdf"></i> PDF İndir
+        </a>
+    </div>
+
+    <!-- Daire Bazlı Tablo -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Daire Bazlı Durum</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Daire No</th>
+                            <th>Toplam Aidat</th>
+                            <th>Ödenen</th>
+                            <th>Kalan</th>
+                            <th>Ödeme Oranı</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for daire in daire_aidatlari %}
+                        <tr>
+                            <td>{{ daire.daire_no }}</td>
+                            <td>{{ "%.2f"|format(daire.toplam_aidat) }} ₺</td>
+                            <td>{{ "%.2f"|format(daire.odenen) }} ₺</td>
+                            <td>{{ "%.2f"|format(daire.kalan) }} ₺</td>
+                            <td>
+                                <div class="progress">
+                                    <div class="progress-bar bg-success" role="progressbar" 
+                                         style="width: {{ (daire.odenen / daire.toplam_aidat * 100)|round|int if daire.toplam_aidat > 0 else 0 }}%">
+                                        {{ (daire.odenen / daire.toplam_aidat * 100)|round|int if daire.toplam_aidat > 0 else 0 }}%
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment/moment.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+$(document).ready(function() {
+    // Aidat/Gider Grafiği
+    const aidatGiderCtx = document.getElementById('aidatGiderChart').getContext('2d');
+    new Chart(aidatGiderCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ son_12_ay|tojson|safe }}.map(item => item.ay),
+            datasets: [{
+                label: 'Aidat',
+                data: {{ son_12_ay|tojson|safe }}.map(item => item.aidat),
+                backgroundColor: 'rgba(52, 152, 219, 0.5)',
+                borderColor: 'rgba(52, 152, 219, 1)',
+                borderWidth: 1
+            },
+            {
+                label: 'Gider',
+                data: {{ son_12_ay|tojson|safe }}.map(item => item.gider),
+                backgroundColor: 'rgba(231, 76, 60, 0.5)',
+                borderColor: 'rgba(231, 76, 60, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // Gider Dağılımı Grafiği
+    const giderDagilimCtx = document.getElementById('giderDagilimChart').getContext('2d');
+    new Chart(giderDagilimCtx, {
+        type: 'pie',
+        data: {
+            labels: {{ gider_kategori_list|tojson|safe }}.map(item => item.kategori),
+            datasets: [{
+                data: {{ gider_kategori_list|tojson|safe }}.map(item => item.toplam),
+                backgroundColor: [
+                    'rgba(52, 152, 219, 0.8)',
+                    'rgba(231, 76, 60, 0.8)',
+                    'rgba(241, 196, 15, 0.8)',
+                    'rgba(46, 204, 113, 0.8)',
+                    'rgba(155, 89, 182, 0.8)',
+                    'rgba(52, 73, 94, 0.8)'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

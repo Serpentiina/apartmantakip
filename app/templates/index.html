@@ -1,0 +1,763 @@
+{% extends "base.html" %}
+
+{% block title %}Ana Sayfa{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* İstatistik Kartları */
+    .stat-card {
+        padding: 1.5rem;
+        border-radius: 15px;
+        position: relative;
+        overflow: hidden;
+        min-height: 140px;
+        transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 100px;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.1);
+        transform: skewX(-30deg) translateX(50%);
+        transition: all 0.3s ease;
+    }
+
+    .stat-card:hover::before {
+        transform: skewX(-30deg) translateX(30%);
+    }
+
+    .stat-card i {
+        font-size: 3rem;
+        position: absolute;
+        bottom: 1rem;
+        right: 1rem;
+        opacity: 0.2;
+    }
+
+    .stat-card .stat-title {
+        font-size: 1rem;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    .stat-card .stat-value {
+        font-size: 2rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: white;
+    }
+
+    .stat-card.daire {
+        background: linear-gradient(45deg, #4158D0, #C850C0);
+    }
+
+    .stat-card.aidat {
+        background: linear-gradient(45deg, #FF5858, #F09819);
+    }
+
+    .stat-card.odenen {
+        background: linear-gradient(45deg, #11998e, #38ef7d);
+    }
+
+    .stat-card.gider {
+        background: linear-gradient(45deg, #0F2027, #2C5364);
+    }
+
+    /* Daire Listesi Tablosu */
+    .table-container {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+        padding: 1.5rem;
+        margin-top: 2rem;
+        border: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .table-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding: 0 1rem;
+    }
+
+    .table-title {
+        font-size: 1.4rem;
+        font-weight: 600;
+        color: #1a1f36;
+        margin: 0;
+        position: relative;
+    }
+
+    .table-title::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: -8px;
+        width: 40px;
+        height: 3px;
+        background: #4158D0;
+        border-radius: 2px;
+    }
+
+    .table thead th {
+        background: #f8fafc;
+        padding: 1.2rem 1rem;
+        font-weight: 600;
+        color: #64748b;
+        border: none;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .table tbody tr {
+        transition: all 0.2s ease;
+        border-bottom: 1px solid rgba(0,0,0,0.03);
+    }
+
+    .table tbody tr:hover {
+        background-color: #f8fafc;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    }
+
+    .table tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+    }
+
+    /* Durum Badge'i */
+    .status-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-weight: 500;
+        font-size: 0.85rem;
+    }
+
+    .status-paid {
+        background-color: rgba(40, 167, 69, 0.1);
+        color: #28a745;
+    }
+
+    .status-unpaid {
+        background-color: rgba(220, 53, 69, 0.1);
+        color: #dc3545;
+    }
+
+    /* İşlem Butonları */
+    .action-buttons {
+        display: flex;
+        gap: 8px;
+        justify-content: flex-start;
+        align-items: center;
+    }
+
+    .btn-action {
+        width: 36px;
+        height: 36px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+        border: none;
+    }
+
+    .btn-action i {
+        font-size: 1rem;
+    }
+
+    .btn-action:hover {
+        transform: translateY(-2px);
+    }
+
+    .btn-edit {
+        background-color: rgba(255, 193, 7, 0.1);
+        color: #ffc107;
+    }
+
+    .btn-edit:hover {
+        background-color: rgba(255, 193, 7, 0.2);
+        color: #ffc107;
+    }
+
+    .btn-delete {
+        background-color: rgba(220, 53, 69, 0.1);
+        color: #dc3545;
+    }
+
+    .btn-delete:hover {
+        background-color: rgba(220, 53, 69, 0.2);
+        color: #dc3545;
+    }
+
+    /* Duyuru Kartı */
+    .duyuru-card {
+        height: 100%;
+        border-radius: 20px;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+        border: 1px solid rgba(0,0,0,0.05);
+        background: white;
+    }
+
+    .duyuru-card .card-header {
+        background: transparent;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        padding: 1.5rem;
+    }
+
+    .duyuru-card .card-header h5 {
+        font-size: 1.4rem;
+        font-weight: 600;
+        color: #1a1f36;
+        margin: 0;
+        position: relative;
+    }
+
+    .duyuru-card .card-header h5::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: -8px;
+        width: 40px;
+        height: 3px;
+        background: #4158D0;
+        border-radius: 2px;
+    }
+
+    .duyuru-card .card-body {
+        padding: 1.5rem;
+    }
+
+    .duyuru-item {
+        padding: 1.2rem;
+        margin-bottom: 1rem;
+        border-radius: 15px;
+        border: 1px solid rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+        position: relative;
+        background: #fff;
+    }
+
+    .duyuru-item:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    }
+
+    .duyuru-item.onemli {
+        border-left: 4px solid #dc3545;
+        background-color: #fff5f5;
+    }
+
+    .duyuru-item.normal {
+        border-left: 4px solid #0dcaf0;
+        background-color: #f0fdff;
+    }
+
+    .duyuru-item h6 {
+        color: #1a1f36;
+        margin-bottom: 0.8rem;
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+
+    .duyuru-item p {
+        color: #64748b;
+        margin-bottom: 0.8rem;
+        line-height: 1.6;
+    }
+
+    .duyuru-item small {
+        color: #94a3b8;
+        font-size: 0.85rem;
+    }
+
+    /* Ortak Container Stili */
+    .content-container {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.06);
+        height: calc(100% - 2rem);
+        border: 1px solid rgba(0,0,0,0.05);
+        position: relative;
+        margin-top: 2rem;
+    }
+
+    /* Daire Listesi Tablosu */
+    .table-container {
+        padding: 1.5rem;
+    }
+
+    .table-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding: 0.5rem;
+        border-bottom: 2px solid #f1f5f9;
+    }
+
+    .table-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .table-title i {
+        color: #4158D0;
+        font-size: 1.25rem;
+    }
+
+    .table-container .btn-primary {
+        background: #4158D0;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .table-container .btn-primary:hover {
+        background: #3448b0;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(65, 88, 208, 0.2);
+    }
+
+    .table {
+        margin: 0;
+    }
+
+    .table thead th {
+        background: #f8fafc;
+        padding: 1.2rem 1rem;
+        font-weight: 600;
+        color: #475569;
+        border: none;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .table tbody tr {
+        transition: all 0.2s ease;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .table tbody tr:hover {
+        background-color: #f8fafc;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    }
+
+    .table tbody td {
+        padding: 1.2rem 1rem;
+        vertical-align: middle;
+        color: #334155;
+        font-weight: 500;
+    }
+
+    /* Duyuru Kartı */
+    .duyuru-card {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .duyuru-card .card-header {
+        background: transparent;
+        border-bottom: 2px solid #f1f5f9;
+        padding: 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .duyuru-card .card-header h5 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .duyuru-card .card-header h5 i {
+        color: #4158D0;
+        font-size: 1.25rem;
+    }
+
+    .duyuru-card .card-body {
+        padding: 1.5rem;
+        flex: 1;
+        overflow-y: auto;
+        max-height: 600px;
+    }
+
+    .duyuru-item {
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        border-radius: 15px;
+        border: 1px solid rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .duyuru-item:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.05);
+    }
+
+    .duyuru-item.onemli {
+        border-left: 4px solid #dc3545;
+        background: linear-gradient(to right, #fff5f5, white);
+    }
+
+    .duyuru-item.normal {
+        border-left: 4px solid #0dcaf0;
+        background: linear-gradient(to right, #f0fdff, white);
+    }
+
+    .duyuru-item h6 {
+        color: #1e293b;
+        margin-bottom: 1rem;
+        font-weight: 700;
+        font-size: 1.1rem;
+        padding-right: 25px;
+    }
+
+    .duyuru-item p {
+        color: #475569;
+        margin-bottom: 1rem;
+        line-height: 1.6;
+        font-size: 0.95rem;
+    }
+
+    .duyuru-item small {
+        color: #64748b;
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .duyuru-item small i {
+        font-size: 0.8rem;
+    }
+
+    .duyuru-item .delete-btn {
+        position: absolute;
+        right: 1rem;
+        top: 1rem;
+        color: #dc3545;
+        opacity: 0;
+        transition: all 0.3s ease;
+    }
+
+    .duyuru-item:hover .delete-btn {
+        opacity: 1;
+    }
+
+    /* Scrollbar Stilini Özelleştirme */
+    .duyuru-card .card-body::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .duyuru-card .card-body::-webkit-scrollbar-track {
+        background: #f1f5f9;
+        border-radius: 4px;
+    }
+
+    .duyuru-card .card-body::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 4px;
+    }
+
+    .duyuru-card .card-body::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+    }
+
+    /* Fade-in animasyonları */
+    .fade-in {
+        animation: fadeIn 0.8s ease-in;
+        opacity: 0;
+        animation-fill-mode: forwards;
+    }
+
+    .fade-in-up {
+        animation: fadeInUp 0.8s ease-out;
+        opacity: 0;
+        animation-fill-mode: forwards;
+    }
+
+    /* Animasyon gecikmesi için sınıflar */
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.2s; }
+    .delay-3 { animation-delay: 0.3s; }
+    .delay-4 { animation-delay: 0.4s; }
+    .delay-5 { animation-delay: 0.5s; }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stat-card daire">
+                <div class="stat-title">Toplam Daire</div>
+                <div class="stat-value">{{ daireler|length }}</div>
+                <i class="fas fa-building"></i>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card aidat">
+                <div class="stat-title">Ödenmemiş Aidat</div>
+                <div class="stat-value">{{ toplam_aidat }}</div>
+                <i class="fas fa-exclamation-circle"></i>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card odenen">
+                <div class="stat-title">Toplam Ödenen Aidat</div>
+                <div class="stat-value">{{ "%.2f"|format(toplam_odenen_aidat) }} ₺</div>
+                <i class="fas fa-check-circle"></i>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card gider">
+                <div class="stat-title">Toplam Gider</div>
+                <div class="stat-value">{{ toplam_gider }}</div>
+                <i class="fas fa-receipt"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="content-container table-container">
+                <div class="table-header">
+                    <h5 class="table-title">
+                        <i class="fas fa-building"></i>
+                        Daire Listesi
+                    </h5>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#daireEkleModal">
+                        <i class="fas fa-plus"></i> Yeni Daire
+                    </button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Daire No</th>
+                                <th>Kat</th>
+                                <th>Sakin</th>
+                                <th>Telefon</th>
+                                <th>Toplam Ödenen</th>
+                                <th>Aidat Durumu</th>
+                                <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for daire in daireler %}
+                            <tr>
+                                <td>{{ daire.daire_no }}</td>
+                                <td>{{ daire.kat }}</td>
+                                <td>{{ daire.sakin_adi }}</td>
+                                <td>{{ daire.telefon }}</td>
+                                <td>{{ "%.2f"|format(daire_odemeleri[daire.id]) }} ₺</td>
+                                <td>
+                                    <span class="status-badge {% if daire.aidat_durumu %}status-paid{% else %}status-unpaid{% endif %}">
+                                        {% if daire.aidat_durumu %}Ödendi{% else %}Ödenmedi{% endif %}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <a href="{{ url_for('main.daire_duzenle', id=daire.id) }}" 
+                                           class="btn btn-action btn-edit">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{{ url_for('main.daire_sil', id=daire.id) }}" 
+                                           class="btn btn-action btn-delete"
+                                           onclick="return confirm('Bu daireyi silmek istediğinizden emin misiniz?')">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="content-container duyuru-card">
+                <div class="card-header">
+                    <h5>
+                        <i class="fas fa-clipboard-list"></i>
+                        Notlar
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if duyurular %}
+                        {% for duyuru in duyurular %}
+                        <div class="duyuru-item {% if duyuru.onemli %}onemli{% else %}normal{% endif %}">
+                            <a href="{{ url_for('main.duyuru_sil', id=duyuru.id) }}" 
+                               onclick="return confirm('Bu duyuruyu silmek istediğinizden emin misiniz?')"
+                               class="delete-btn">
+                                <i class="fas fa-times"></i>
+                            </a>
+                            <h6>{{ duyuru.baslik }}</h6>
+                            <p>{{ duyuru.icerik }}</p>
+                            <small>
+                                <i class="far fa-calendar-alt"></i>
+                                {{ duyuru.created_at.strftime('%d.%m.%Y') }}
+                            </small>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted text-center my-4">Henüz duyuru bulunmuyor.</p>
+                    {% endif %}
+                    <button type="button" class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#duyuruEkleModal">
+                        <i class="fas fa-plus"></i> Yeni Not
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Daire Ekleme Modal -->
+    <div class="modal fade" id="daireEkleModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Yeni Daire Ekle</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="{{ url_for('main.daire_ekle') }}" method="POST">
+                        {{ form.hidden_tag() }}
+                        <div class="mb-3">
+                            <label class="form-label">Daire No</label>
+                            {{ form.daire_no(class="form-control") }}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Kat</label>
+                            {{ form.kat(class="form-control") }}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Sakin Adı</label>
+                            {{ form.sakin_adi(class="form-control") }}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Telefon</label>
+                            {{ form.telefon(class="form-control") }}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            {{ form.email(class="form-control") }}
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-save"></i> Kaydet
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Duyuru Ekleme Modal -->
+    <div class="modal fade" id="duyuruEkleModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Yeni Not Ekle</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="{{ url_for('main.duyuru_ekle') }}" method="POST">
+                        {{ duyuru_form.hidden_tag() }}
+                        <div class="mb-3">
+                            <label class="form-label">Başlık</label>
+                            {{ duyuru_form.baslik(class="form-control") }}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">İçerik</label>
+                            {{ duyuru_form.icerik(class="form-control", rows="3") }}
+                        </div>
+                        <div class="mb-3 form-check">
+                            {{ duyuru_form.onemli(class="form-check-input") }}
+                            <label class="form-check-label" for="onemli">Önemli Duyuru</label>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-save"></i> Not Ekle
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Kategori kartları için -->
+    <div class="category-stats fade-in">
+        <div class="row">
+            {% for kategori, toplam in kategori_toplamlar.items() %}
+            <div class="col-md-2">
+                <div class="category-card cat-{{ kategori }} fade-in-up delay-{{ loop.index }}">
+                    <!-- kart içeriği -->
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Gider tablosu için -->
+    <div class="gider-table fade-in delay-2">
+        <!-- tablo içeriği -->
+    </div>
+
+    <!-- Duyurular için -->
+    <div class="duyurular fade-in-up delay-3">
+        <!-- duyuru içeriği -->
+    </div>
+
+    <!-- Grafikler için -->
+    <div class="row mb-4 mt-4 fade-in delay-4">
+        <!-- grafik içeriği -->
+    </div>
+{% endblock %}
