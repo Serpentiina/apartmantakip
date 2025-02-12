@@ -6,77 +6,154 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         body {
-            background-color: #f8f9fa;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
         }
         .login-container {
             margin-top: 100px;
+            animation: slideUp 0.8s ease;
         }
         .card {
             border: none;
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
         }
         .card-header {
-            background-color: #fff;
-            border-bottom: none;
+            background: linear-gradient(45deg, #ffffff, #f8f9fa);
+            border-bottom: 3px solid #0d6efd;
             text-align: center;
-            padding: 20px;
+            padding: 30px;
+            position: relative;
         }
         .brand-icon {
             font-size: 48px;
+            background: linear-gradient(45deg, #0d6efd, #00c6ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
+        }
+        .form-control {
+            border-radius: 8px;
+            padding: 12px 20px;
+            transition: all 0.3s ease;
+        }
+        .form-control:focus {
+            box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.25);
+        }
+        .btn-login {
+            background: linear-gradient(45deg, #0d6efd, #00c6ff);
+            border: none;
+            padding: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(13, 110, 253, 0.4);
+        }
+        .additional-links {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .additional-links a {
+            color: #6c757d;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        .additional-links a:hover {
             color: #0d6efd;
+        }
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .input-group-text {
+            background-color: #e9ecef;
+            border: none;
+        }
+        .alert {
+            border-radius: 8px;
+            padding: 12px;
+            position: relative;
+            padding-left: 40px;
+        }
+        .alert-danger:before {
+            content: "\f06a";
+            font-family: "Font Awesome 5 Free";
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #dc3545;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="row justify-content-center login-container">
-            <div class="col-md-4">
+            <div class="col-md-5">
                 <div class="card">
                     <div class="card-header">
                         <i class="fas fa-building brand-icon"></i>
-                        <h4 class="mt-3">Apartman Takip</h4>
-                        <p class="text-muted">Giriş yaparak devam edin</p>
+                        <h3 class="mt-3 fw-bold">Apartman Yönetim Sistemi</h3>
+                        <p class="text-muted mb-0">Lütfen hesabınıza giriş yapın</p>
                     </div>
                     <div class="card-body p-4">
                         {% with messages = get_flashed_messages() %}
                             {% if messages %}
                                 {% for message in messages %}
-                                    <div class="alert alert-danger">{{ message }}</div>
+                                    <div class="alert alert-danger mb-4">{{ message }}</div>
                                 {% endfor %}
                             {% endif %}
                         {% endwith %}
                         
                         <form method="POST" action="{{ url_for('auth.login') }}">
-                            <div class="mb-3">
-                                <label class="form-label">Kullanıcı Adı</label>
+                            <div class="mb-4">
+                                <label class="form-label fw-medium">Kullanıcı Adı</label>
                                 <div class="input-group">
                                     <span class="input-group-text">
-                                        <i class="fas fa-user"></i>
+                                        <i class="fas fa-user text-secondary"></i>
                                     </span>
-                                    <input type="text" class="form-control" name="username" required>
+                                    <input type="text" class="form-control" name="username" placeholder="Kullanıcı adınızı girin" required>
                                 </div>
                             </div>
-                            <div class="mb-3">
-                                <label class="form-label">Şifre</label>
+                            <div class="mb-4">
+                                <label class="form-label fw-medium">Şifre</label>
                                 <div class="input-group">
                                     <span class="input-group-text">
-                                        <i class="fas fa-lock"></i>
+                                        <i class="fas fa-lock text-secondary"></i>
                                     </span>
-                                    <input type="password" class="form-control" name="password" required>
+                                    <input type="password" class="form-control" name="password" placeholder="••••••••" required>
                                 </div>
                             </div>
-                            <div class="mb-3 form-check">
-                                <input type="checkbox" class="form-check-input" name="remember" id="remember">
-                                <label class="form-check-label" for="remember">Beni Hatırla</label>
+                            <div class="mb-4 d-flex justify-content-between align-items-center">
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" name="remember" id="remember">
+                                    <label class="form-check-label text-secondary" for="remember">Beni Hatırla</label>
+                                </div>
+                                <a href="#" class="text-decoration-none text-secondary">Şifremi Unuttum?</a>
                             </div>
-                            <div class="d-grid">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-sign-in-alt"></i> Giriş Yap
+                            <div class="d-grid mb-3">
+                                <button type="submit" class="btn btn-login text-white">
+                                    <i class="fas fa-sign-in-alt me-2"></i> Giriş Yap
                                 </button>
+                            </div>
+                            <div class="additional-links">
+                                <span class="text-secondary">Hesabınız yok mu? </span>
+                                <a href="#" class="fw-medium">Kayıt Ol</a>
                             </div>
                         </form>
                     </div>
+                </div>
+                <div class="text-center mt-4">
+                    <p class="text-white mb-0">© 2024 Apartman Takip. Tüm hakları saklıdır.</p>
                 </div>
             </div>
         </div>

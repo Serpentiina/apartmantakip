@@ -259,6 +259,7 @@
                     <th>Sakin</th>
                     <th>Miktar</th>
                     <th>Son Ödeme Tarihi</th>
+                    <th>İşlem Tarihi</th>
                     <th>Durum</th>
                     <th>İşlemler</th>
                 </tr>
@@ -273,6 +274,7 @@
                     <td>{{ aidat.daire.sakin_adi }}</td>
                     <td>{{ "%.2f"|format(aidat.miktar) }} ₺</td>
                     <td>{{ aidat.son_odeme_tarihi.strftime('%d.%m.%Y') }}</td>
+                    <td>{{ aidat.created_at.strftime('%d.%m.%Y') }}</td>
                     <td>
                         <span class="status-badge {% if aidat.odendi %}status-paid{% else %}status-unpaid{% endif %}">
                             {% if aidat.odendi %}Ödendi{% else %}Ödenmedi{% endif %}
@@ -342,7 +344,12 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Son Ödeme Tarihi</label>
-                        {{ form.son_odeme_tarihi(class="form-control", type="date") }}
+                        {{ form.son_odeme_tarihi(class="form-control", type="date", value=ay_sonu.strftime('%Y-%m-%d')) }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">İşlem Tarihi</label>
+                        <input type="date" name="created_at" class="form-control" required 
+                               value="{{ today.strftime('%Y-%m-%d') }}">
                     </div>
                     <button type="submit" class="btn btn-primary w-100">
                         <i class="fas fa-save"></i> Kaydet

@@ -25,7 +25,7 @@ class Daire(db.Model):
     daire_no = db.Column(db.Integer, nullable=False)
     kat = db.Column(db.Integer, nullable=False)
     sakin_adi = db.Column(db.String(100))
-    telefon = db.Column(db.String(15))
+    telefon = db.Column(db.String(20))
     email = db.Column(db.String(120))
     aidat_durumu = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)

@@ -17,6 +17,15 @@ def aidat_listesi():
     page = request.args.get('page', 1, type=int)
     per_page = 10
 
+    # Bugünün tarihini al
+    today = datetime.now()
+    
+    # Bu ayın son gününü hesapla
+    if today.month == 12:
+        ay_sonu = date(today.year + 1, 1, 1) - timedelta(days=1)
+    else:
+        ay_sonu = date(today.year, today.month + 1, 1) - timedelta(days=1)
+
     # İstatistikleri hesapla
     toplam_aidat = db.session.query(func.sum(Aidat.miktar)).scalar() or 0
     odenen_aidat = db.session.query(func.sum(Aidat.miktar)).filter(Aidat.odendi == True).scalar() or 0
@@ -104,7 +113,9 @@ def aidat_listesi():
                          toplam_aidat="{:.2f}".format(toplam_aidat),
                          odenen_aidat="{:.2f}".format(odenen_aidat),
                          odenmemis_aidat="{:.2f}".format(odenmemis_aidat),
-                         borclu_daireler=borclu_daireler)
+                         borclu_daireler=borclu_daireler,
+                         today=today,
+                         ay_sonu=ay_sonu)
 
 @aidat.route('/aidat/ekle', methods=['GET', 'POST'])
 @login_required

@@ -9,6 +9,22 @@ from app.routes import main
 @login_required
 def index():
     daireler = Daire.query.order_by(Daire.daire_no.asc()).all()
+    
+    # Her daire için aidat durumunu kontrol et
+    for daire in daireler:
+        # Dairenin ödenmemiş aidatlarını kontrol et
+        odenmemis_aidat = Aidat.query.filter_by(
+            daire_id=daire.id,
+            odendi=False
+        ).first()
+        
+        # Aidat durumunu güncelle
+        daire.aidat_durumu = odenmemis_aidat is None
+    
+    # Değişiklikleri kaydet
+    db.session.commit()
+    
+    # Diğer veriler
     toplam_aidat = Aidat.query.filter_by(odendi=False).count()
     toplam_gider = Gider.query.count()
     son_duyurular = Duyuru.query.order_by(Duyuru.created_at.desc()).limit(5).all()

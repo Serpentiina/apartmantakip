@@ -532,6 +532,25 @@
         }
     }
 </style>
+
+{# Telefon input için CSS #}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.css">
+<style>
+    /* Telefon input stilini özelleştirme */
+    .iti {
+        width: 100%;
+    }
+    .iti__flag-container {
+        border-radius: 6px 0 0 6px;
+    }
+    .iti__selected-flag {
+        background-color: #f8f9fa;
+        border-radius: 6px 0 0 6px;
+    }
+    .iti--separate-dial-code .iti__selected-dial-code {
+        color: #495057;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -670,7 +689,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <form action="{{ url_for('main.daire_ekle') }}" method="POST">
+                    <form action="{{ url_for('main.daire_ekle') }}" method="POST" id="daireForm">
                         {{ form.hidden_tag() }}
                         <div class="mb-3">
                             <label class="form-label">Daire No</label>
@@ -686,7 +705,8 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Telefon</label>
-                            {{ form.telefon(class="form-control") }}
+                            {{ form.telefon(class="form-control", id="phone") }}
+                            <input type="hidden" name="tam_telefon" id="tam_telefon">
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Email</label>
@@ -760,4 +780,41 @@
     <div class="row mb-4 mt-4 fade-in delay-4">
         <!-- grafik içeriği -->
     </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Telefon input'unu başlat
+        const phoneInput = document.querySelector("#phone");
+        const iti = window.intlTelInput(phoneInput, {
+            initialCountry: "tr", // Varsayılan ülke
+            separateDialCode: true, // Ülke kodunu ayrı göster
+            utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
+            preferredCountries: ["tr", "us", "gb", "de"], // Üstte gösterilecek ülkeler
+            formatOnDisplay: true,
+            autoPlaceholder: "aggressive"
+        });
+
+        // Form gönderilmeden önce tam telefon numarasını al
+        document.getElementById('daireForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const tamTelefon = iti.getNumber(); // E.164 formatında tam numara
+            document.getElementById('tam_telefon').value = tamTelefon;
+            this.submit();
+        });
+
+        // Telefon numarası değiştiğinde validasyon
+        phoneInput.addEventListener('input', function() {
+            if (iti.isValidNumber()) {
+                phoneInput.classList.remove('is-invalid');
+                phoneInput.classList.add('is-valid');
+            } else {
+                phoneInput.classList.remove('is-valid');
+                phoneInput.classList.add('is-invalid');
+            }
+        });
+    });
+</script>
 {% endblock %}

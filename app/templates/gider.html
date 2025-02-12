@@ -4,37 +4,57 @@
 
 {% block extra_css %}
 <style>
-    /* Kategori kartları */
+    :root {
+        --primary-color: #2C3E50;
+        --secondary-color: #6c757d;
+        --bg-color: #ffffff;
+        --border-radius: 15px;
+    }
+
+    /* Genel sayfa stili */
+    body {
+        background-color: #f4f6f9;
+    }
+
+    /* Kategori Kartları */
     .category-stats {
         margin-bottom: 2rem;
     }
 
     .category-card {
-        background: white;
-        border-radius: 15px;
+        background: var(--bg-color);
+        border-radius: var(--border-radius);
         padding: 1.2rem;
         height: 100%;
         transition: all 0.3s ease;
         border-left: 4px solid;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
     }
 
     .category-card:hover {
         transform: translateY(-5px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     }
 
     .category-card .title {
-        font-size: 0.9rem;
-        color: #6c757d;
+        font-size: 1rem;
+        color: var(--secondary-color);
         margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+    }
+
+    .category-card .title i {
+        margin-right: 0.5rem;
     }
 
     .category-card .value {
         font-size: 1.5rem;
         font-weight: 600;
-        color: #2C3E50;
+        color: var(--primary-color);
     }
 
-    /* Kategori renkleri */
+    /* Kategori Renkleri */
     .cat-elektrik { border-color: #FF6B6B; }
     .cat-su { border-color: #4ECDC4; }
     .cat-temizlik { border-color: #45B7D1; }
@@ -42,10 +62,10 @@
     .cat-tamirat { border-color: #FFEEAD; }
     .cat-diger { border-color: #D4A5A5; }
 
-    /* Gider tablosu */
+    /* Gider Tablosu */
     .gider-table {
-        background: white;
-        border-radius: 15px;
+        background: var(--bg-color);
+        border-radius: var(--border-radius);
         padding: 1.5rem;
         box-shadow: 0 2px 15px rgba(0,0,0,0.05);
     }
@@ -54,7 +74,8 @@
         background: #f8f9fa;
         padding: 1rem;
         font-weight: 600;
-        color: #2C3E50;
+        color: var(--primary-color);
+        border: none;
     }
 
     .table tbody tr {
@@ -66,7 +87,7 @@
         transform: scale(1.01);
     }
 
-    /* Kategori badge'leri */
+    /* Kategori Badge’leri */
     .category-badge {
         padding: 0.5rem 1rem;
         border-radius: 50px;
@@ -104,7 +125,7 @@
         color: #D4A5A5;
     }
 
-    /* Silme butonu */
+    /* Silme Butonu */
     .btn-delete {
         background-color: rgba(220, 53, 69, 0.1);
         color: #dc3545;
@@ -122,161 +143,177 @@
 {% endblock %}
 
 {% block content %}
-<div class="category-stats">
-    <div class="row">
-        {% for kategori, toplam in kategori_toplamlar.items() %}
-        <div class="col-md-2">
-            <div class="category-card cat-{{ kategori }}">
-                <div class="title">{{ kategori|title }}</div>
-                <div class="value">{{ "%.2f"|format(toplam) }} ₺</div>
+<div class="container my-4">
+    <!-- Kategori İstatistik Kartları -->
+    <div class="category-stats">
+        <div class="row g-3">
+            {% for kategori, toplam in kategori_toplamlar.items() %}
+            <div class="col-6 col-md-2">
+                <div class="category-card cat-{{ kategori }}">
+                    <div class="title">
+                        {% if kategori == 'elektrik' %}
+                            <i class="fas fa-bolt"></i>
+                        {% elif kategori == 'su' %}
+                            <i class="fas fa-tint"></i>
+                        {% elif kategori == 'temizlik' %}
+                            <i class="fas fa-broom"></i>
+                        {% elif kategori == 'asansor' %}
+                            <i class="fas fa-arrow-up"></i>
+                        {% elif kategori == 'tamirat' %}
+                            <i class="fas fa-tools"></i>
+                        {% else %}
+                            <i class="fas fa-ellipsis-h"></i>
+                        {% endif %}
+                        {{ kategori|title }}
+                    </div>
+                    <div class="value">{{ "%.2f"|format(toplam) }} ₺</div>
+                </div>
             </div>
-        </div>
-        {% endfor %}
-    </div>
-</div>
-
-<div class="gider-table">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h4 class="mb-0">Gider Listesi</h4>
-        <div>
-            <!-- Filtreleme butonu eklendi -->
-            <button type="button" class="btn btn-secondary me-2" data-bs-toggle="collapse" data-bs-target="#filterCollapse">
-                <i class="fas fa-filter"></i> Filtrele
-            </button>
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#giderEkleModal">
-                <i class="fas fa-plus"></i> Yeni Gider
-            </button>
-        </div>
-    </div>
-
-    <!-- Filtreleme alanı eklendi -->
-    <div class="collapse mb-4" id="filterCollapse">
-        <div class="card card-body">
-            <form method="GET" class="row g-3">
-                <div class="col-md-3">
-                    <label class="form-label">Kategori</label>
-                    <select name="kategori" class="form-select">
-                        <option value="">Tümü</option>
-                        {% for kategori in form.kategori.choices %}
-                        <option value="{{ kategori[0] }}" {% if request.args.get('kategori') == kategori[0] %}selected{% endif %}>
-                            {{ kategori[1] }}
-                        </option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">Başlangıç Tarihi</label>
-                    <input type="date" name="baslangic_tarihi" class="form-control" 
-                           value="{{ request.args.get('baslangic_tarihi', '') }}">
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">Bitiş Tarihi</label>
-                    <input type="date" name="bitis_tarihi" class="form-control"
-                           value="{{ request.args.get('bitis_tarihi', '') }}">
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">Minimum Tutar</label>
-                    <input type="number" name="min_tutar" class="form-control" step="0.01"
-                           value="{{ request.args.get('min_tutar', '') }}">
-                </div>
-                <div class="col-12">
-                    <button type="submit" class="btn btn-primary">Filtrele</button>
-                    <a href="{{ url_for('gider.gider_listesi') }}" class="btn btn-outline-secondary">Sıfırla</a>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Toplu işlem butonları eklendi -->
-    <div class="mb-3">
-        <button id="deleteSelected" class="btn btn-danger" disabled>
-            <i class="fas fa-trash"></i> Seçilenleri Sil
-        </button>
-    </div>
-
-    <div class="table-responsive">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>
-                        <input type="checkbox" id="selectAll" class="form-check-input">
-                    </th>
-                    <th>Başlık</th>
-                    <th>Kategori</th>
-                    <th>Açıklama</th>
-                    <th>Miktar</th>
-                    <th>Tarih</th>
-                    <th>İşlemler</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for gider in giderler %}
-                <tr>
-                    <td>
-                        <input type="checkbox" class="form-check-input gider-checkbox" value="{{ gider.id }}">
-                    </td>
-                    <td>{{ gider.baslik }}</td>
-                    <td>
-                        <span class="category-badge cat-badge-{{ gider.kategori }}">
-                            {{ gider.kategori|title }}
-                        </span>
-                    </td>
-                    <td>{{ gider.aciklama }}</td>
-                    <td>{{ "%.2f"|format(gider.miktar) }} ₺</td>
-                    <td>{{ gider.tarih.strftime('%d.%m.%Y') }}</td>
-                    <td>
-                        <a href="{{ url_for('gider.gider_sil', id=gider.id) }}" 
-                           class="btn btn-delete"
-                           onclick="return confirm('Bu gideri silmek istediğinizden emin misiniz?')">
-                            <i class="fas fa-trash"></i>
-                        </a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-
-    <!-- Sayfalama eklendi -->
-    {% if pagination %}
-    <nav aria-label="Sayfalama">
-        <ul class="pagination justify-content-center">
-            {% for page in pagination.iter_pages() %}
-                {% if page %}
-                    <li class="page-item {% if page == pagination.page %}active{% endif %}">
-                        <a class="page-link" href="{{ url_for('gider.gider_listesi', page=page, **request.args) }}">
-                            {{ page }}
-                        </a>
-                    </li>
-                {% else %}
-                    <li class="page-item disabled"><span class="page-link">...</span></li>
-                {% endif %}
             {% endfor %}
-        </ul>
-    </nav>
-    {% endif %}
-</div>
+        </div>
+    </div>
 
-<!-- En son grafikler -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Gider Tablosu ve İşlemler -->
+    <div class="gider-table">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="mb-0">Gider Listesi</h4>
+            <div>
+                <button type="button" class="btn btn-secondary me-2" data-bs-toggle="collapse" data-bs-target="#filterCollapse">
+                    <i class="fas fa-filter"></i> Filtrele
+                </button>
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#giderEkleModal">
+                    <i class="fas fa-plus"></i> Yeni Gider
+                </button>
+            </div>
+        </div>
 
-<div class="row mb-4 mt-4">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-body" style="height: 500px;">  <!-- Yüksekliği artırdık -->
-                <h5 class="card-title">Aylık Gider Dağılımı</h5>
-                <div style="position: relative; height: 450px;">  <!-- Container yüksekliğini artırdık -->
-                    <canvas id="aylikGiderChart"></canvas>
+        <!-- Filtreleme Alanı -->
+        <div class="collapse mb-4" id="filterCollapse">
+            <div class="card card-body">
+                <form method="GET" class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Kategori</label>
+                        <select name="kategori" class="form-select">
+                            <option value="">Tümü</option>
+                            {% for kategori in form.kategori.choices %}
+                            <option value="{{ kategori[0] }}" {% if request.args.get('kategori') == kategori[0] %}selected{% endif %}>
+                                {{ kategori[1] }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Başlangıç Tarihi</label>
+                        <input type="date" name="baslangic_tarihi" class="form-control" 
+                               value="{{ request.args.get('baslangic_tarihi', '') }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Bitiş Tarihi</label>
+                        <input type="date" name="bitis_tarihi" class="form-control"
+                               value="{{ request.args.get('bitis_tarihi', '') }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Minimum Tutar</label>
+                        <input type="number" name="min_tutar" class="form-control" step="0.01"
+                               value="{{ request.args.get('min_tutar', '') }}">
+                    </div>
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary">Filtrele</button>
+                        <a href="{{ url_for('gider.gider_listesi') }}" class="btn btn-outline-secondary">Sıfırla</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Toplu İşlem Butonları -->
+        <div class="mb-3">
+            <button id="deleteSelected" class="btn btn-danger" disabled>
+                <i class="fas fa-trash"></i> Seçilenleri Sil
+            </button>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>
+                            <input type="checkbox" id="selectAll" class="form-check-input">
+                        </th>
+                        <th>Başlık</th>
+                        <th>Kategori</th>
+                        <th>Açıklama</th>
+                        <th>Miktar</th>
+                        <th>Tarih</th>
+                        <th>İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for gider in giderler %}
+                    <tr>
+                        <td>
+                            <input type="checkbox" class="form-check-input gider-checkbox" value="{{ gider.id }}">
+                        </td>
+                        <td>{{ gider.baslik }}</td>
+                        <td>
+                            <span class="category-badge cat-badge-{{ gider.kategori }}">
+                                {{ gider.kategori|title }}
+                            </span>
+                        </td>
+                        <td>{{ gider.aciklama }}</td>
+                        <td>{{ "%.2f"|format(gider.miktar) }} ₺</td>
+                        <td>{{ gider.tarih.strftime('%d.%m.%Y') }}</td>
+                        <td>
+                            <a href="{{ url_for('gider.gider_sil', id=gider.id) }}" 
+                               class="btn btn-delete"
+                               onclick="return confirm('Bu gideri silmek istediğinizden emin misiniz?')">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Sayfalama -->
+        {% if pagination %}
+        <nav aria-label="Sayfalama">
+            <ul class="pagination justify-content-center">
+                {% for page in pagination.iter_pages() %}
+                    {% if page %}
+                        <li class="page-item {% if page == pagination.page %}active{% endif %}">
+                            <a class="page-link" href="{{ url_for('gider.gider_listesi', page=page, **request.args) }}">
+                                {{ page }}
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+
+    <!-- Grafikler -->
+    <div class="row mb-4 mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body" style="height: 500px;">
+                    <h5 class="card-title">Aylık Gider Dağılımı</h5>
+                    <div style="position: relative; height: 450px;">
+                        <canvas id="aylikGiderChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-body" style="height: 500px;">  <!-- Yüksekliği artırdık -->
-                <h5 class="card-title">Kategori Bazlı Dağılım</h5>
-                <div style="position: relative; height: 450px;">  <!-- Container yüksekliğini artırdık -->
-                    <canvas id="kategoriChart"></canvas>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body" style="height: 500px;">
+                    <h5 class="card-title">Kategori Bazlı Dağılım</h5>
+                    <div style="position: relative; height: 450px;">
+                        <canvas id="kategoriChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
@@ -319,19 +356,21 @@
     </div>
 </div>
 
-<!-- JavaScript kodunu content bloğunun içine taşıyalım -->
+<!-- JavaScript Kodları -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Aylık gider grafiği
+    // Aylık Gider Grafiği
     const aylikCtx = document.getElementById('aylikGiderChart');
-    if (aylikCtx && {{ chart_data.aylik_toplam.giderler|tojson|safe }}.reduce((a, b) => a + b, 0) > 0) {
+    const aylikGiderData = {{ chart_data.aylik_toplam.giderler|tojson|safe }};
+    if (aylikCtx && aylikGiderData.reduce((a, b) => a + b, 0) > 0) {
         new Chart(aylikCtx, {
             type: 'bar',
             data: {
                 labels: {{ chart_data.aylik_toplam.labels|tojson|safe }},
                 datasets: [{
                     label: 'Aylık Toplam Gider',
-                    data: {{ chart_data.aylik_toplam.giderler|tojson|safe }},
+                    data: aylikGiderData,
                     backgroundColor: 'rgba(75, 192, 192, 0.5)',
                     borderColor: 'rgb(75, 192, 192)',
                     borderWidth: 1
@@ -360,22 +399,23 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Kategori dağılım grafiği
+    // Kategori Dağılım Grafiği
     const kategoriCtx = document.getElementById('kategoriChart');
-    if (kategoriCtx && {{ chart_data.kategori_dagilim.data|tojson|safe }}.reduce((a, b) => a + b, 0) > 0) {
+    const kategoriData = {{ chart_data.kategori_dagilim.data|tojson|safe }};
+    if (kategoriCtx && kategoriData.reduce((a, b) => a + b, 0) > 0) {
         new Chart(kategoriCtx, {
             type: 'pie',
             data: {
                 labels: {{ chart_data.kategori_dagilim.labels|tojson|safe }},
                 datasets: [{
-                    data: {{ chart_data.kategori_dagilim.data|tojson|safe }},
+                    data: kategoriData,
                     backgroundColor: [
-                        'rgb(255, 99, 132)',   // kırmızı
-                        'rgb(54, 162, 235)',   // mavi
-                        'rgb(255, 206, 86)',   // sarı
-                        'rgb(75, 192, 192)',   // turkuaz
-                        'rgb(153, 102, 255)',  // mor
-                        'rgb(255, 159, 64)'    // turuncu
+                        'rgb(255, 99, 132)',
+                        'rgb(54, 162, 235)',
+                        'rgb(255, 206, 86)',
+                        'rgb(75, 192, 192)',
+                        'rgb(153, 102, 255)',
+                        'rgb(255, 159, 64)'
                     ]
                 }]
             },
@@ -390,11 +430,11 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Seçim ve Toplu Silme İşlemleri
     const selectAllCheckbox = document.getElementById('selectAll');
     const giderCheckboxes = document.getElementsByClassName('gider-checkbox');
     const deleteSelectedBtn = document.getElementById('deleteSelected');
 
-    // Tümünü seç/kaldır
     selectAllCheckbox.addEventListener('change', function() {
         Array.from(giderCheckboxes).forEach(checkbox => {
             checkbox.checked = selectAllCheckbox.checked;
@@ -402,30 +442,21 @@ document.addEventListener('DOMContentLoaded', function() {
         updateDeleteButton();
     });
 
-    // Checkbox değişimlerini izle
     Array.from(giderCheckboxes).forEach(checkbox => {
         checkbox.addEventListener('change', function() {
             updateDeleteButton();
-            // Tümü seçili mi kontrol et
-            selectAllCheckbox.checked = Array.from(giderCheckboxes)
-                .every(cb => cb.checked);
+            selectAllCheckbox.checked = Array.from(giderCheckboxes).every(cb => cb.checked);
         });
     });
 
-    // Silme butonunu güncelle
     function updateDeleteButton() {
-        const selectedCount = Array.from(giderCheckboxes)
-            .filter(cb => cb.checked).length;
+        const selectedCount = Array.from(giderCheckboxes).filter(cb => cb.checked).length;
         deleteSelectedBtn.disabled = selectedCount === 0;
-        deleteSelectedBtn.textContent = `Seçilenleri Sil (${selectedCount})`;
+        deleteSelectedBtn.innerHTML = `<i class="fas fa-trash"></i> Seçilenleri Sil (${selectedCount})`;
     }
 
-    // Toplu silme işlemi
     deleteSelectedBtn.addEventListener('click', function() {
-        const selectedIds = Array.from(giderCheckboxes)
-            .filter(cb => cb.checked)
-            .map(cb => cb.value);
-
+        const selectedIds = Array.from(giderCheckboxes).filter(cb => cb.checked).map(cb => cb.value);
         if (selectedIds.length && confirm(`${selectedIds.length} gideri silmek istediğinizden emin misiniz?`)) {
             const form = document.createElement('form');
             form.method = 'POST';
