@@ -140,6 +140,67 @@
                 display: block;
             }
         }
+
+        /* Dropdown menü stilleri */
+        .dropdown-menu {
+            background: linear-gradient(135deg, #4158D0 0%, #C850C0 100%);
+            border: none;
+            border-radius: 12px;
+            padding: 0.5rem;
+            margin-top: 0.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .dropdown-item {
+            color: var(--text-light) !important;
+            padding: 0.8rem 1.2rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .dropdown-item i {
+            margin-right: 8px;
+            width: 20px;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+
+        /* Mobil görünüm için dropdown stilleri */
+        @media (max-width: 991px) {
+            .dropdown-menu {
+                background: rgba(255, 255, 255, 0.1);
+                margin-top: 0;
+            }
+
+            .dropdown-item {
+                padding: 0.8rem 1.5rem;
+            }
+        }
+
+        /* Hover dropdown için yeni stiller */
+        .nav-item.dropdown:hover .dropdown-menu {
+            display: block;
+            margin-top: 0;
+        }
+
+        .dropdown-menu {
+            margin-top: 0;
+            animation: fadeIn 0.2s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
     </style>
     {% block extra_css %}{% endblock %}
 </head>
@@ -160,11 +221,27 @@
                             <i class="fas fa-home"></i>Ana Sayfa
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{ 'active' if request.endpoint == 'aidat.aidat_listesi' }}" 
-                           href="{{ url_for('aidat.aidat_listesi') }}">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle {{ 'active' if request.endpoint and request.endpoint.startswith('aidat.') }}" 
+                           href="#" 
+                           id="aidatDropdown" 
+                           role="button" 
+                           data-bs-toggle="dropdown" 
+                           aria-expanded="false">
                             <i class="fas fa-money-bill"></i>Aidatlar
                         </a>
+                        <ul class="dropdown-menu" aria-labelledby="aidatDropdown">
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('aidat.aidat_listesi') }}">
+                                    <i class="fas fa-list"></i> İşlemler
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('aidat.borclu_daireler_listesi') }}">
+                                    <i class="fas fa-exclamation-triangle"></i> Borçlu Daireler
+                                </a>
+                            </li>
+                        </ul>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {{ 'active' if request.endpoint == 'gider.gider_listesi' }}" 

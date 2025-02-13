@@ -244,3 +244,52 @@ def secilenleri_sil():
         flash(f'Aidatlar silinirken bir hata oluştu: {str(e)}', 'error')
     
     return redirect(url_for('aidat.aidat_listesi'))
+
+@aidat.route('/borclu-daireler')
+@login_required
+def borclu_daireler_listesi():
+    daireler = Daire.query.all()
+    borclu_daireler = []
+    
+    # Tüm daireleri döngüye al
+    for daire in daireler:
+        # Her daire için ödenmemiş aidatları bul
+        odenmemis_aidatlar = Aidat.query.filter_by(
+            daire_id=daire.id,
+            odendi=False
+        ).order_by(Aidat.son_odeme_tarihi).all()
+        
+        # Eğer ödenmemiş aidat varsa
+        if odenmemis_aidatlar:
+            toplam_borc = sum(aidat.miktar for aidat in odenmemis_aidatlar)
+            en_eski_borc = min(aidat.son_odeme_tarihi for aidat in odenmemis_aidatlar)
+            
+            # Borç detaylarını hazırla
+            borc_detaylari = []
+            bugun = datetime.now().date()
+            
+            for aidat in odenmemis_aidatlar:
+                son_odeme = aidat.son_odeme_tarihi.date() if isinstance(aidat.son_odeme_tarihi, datetime) else aidat.son_odeme_tarihi
+                gecikme_suresi = (bugun - son_odeme).days
+                
+                borc_detaylari.append({
+                    'donem': son_odeme.strftime('%B %Y'),
+                    'miktar': aidat.miktar,
+                    'son_odeme_tarihi': son_odeme,
+                    'gecikme_suresi': max(0, gecikme_suresi)
+                })
+            
+            # Borçlu daire bilgilerini listeye ekle
+            borclu_daireler.append({
+                'daire_no': daire.daire_no,
+                'sakin_adi': daire.sakin_adi,
+                'toplam_borc': toplam_borc,
+                'odenmemis_aidat_sayisi': len(odenmemis_aidatlar),
+                'en_eski_borc_tarihi': en_eski_borc,
+                'borc_detaylari': borc_detaylari
+            })
+    
+    # Borçlu daireleri en eski borç tarihine göre sırala
+    borclu_daireler.sort(key=lambda x: x['en_eski_borc_tarihi'])
+    
+    return render_template('borclu_daireler.html', borclu_daireler=borclu_daireler)
