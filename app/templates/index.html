@@ -593,12 +593,17 @@
                         <i class="fas fa-building"></i>
                         Funda Apartmanı Daire Listesi
                     </h5>
-                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#daireEkleModal">
-                        <i class="fas fa-plus"></i> Yeni Daire
-                    </button>
+                    <div class="d-flex gap-3 align-items-center">
+                        <div class="search-box">
+                            <input type="text" id="searchInput" class="form-control" placeholder="Sakin adı ile ara...">
+                        </div>
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#daireEkleModal">
+                            <i class="fas fa-plus"></i> Yeni Daire
+                        </button>
+                    </div>
                 </div>
                 <div class="table-responsive">
-                    <table class="table">
+                    <table class="table" id="daireTable">
                         <thead>
                             <tr>
                                 <th>Daire No</th>
@@ -612,7 +617,7 @@
                         </thead>
                         <tbody>
                             {% for daire in daireler %}
-                            <tr>
+                            <tr class="daire-row">
                                 <td>{{ daire.daire_no }}</td>
                                 <td>{{ daire.kat }}</td>
                                 <td>{{ daire.sakin_adi }}</td>
@@ -640,6 +645,18 @@
                             {% endfor %}
                         </tbody>
                     </table>
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div class="showing-info">
+                            Gösterilen: <span id="showingStart">1</span> - <span id="showingEnd">5</span> / <span id="totalItems">{{ daireler|length }}</span>
+                        </div>
+                        <div class="pagination-container">
+                            <nav aria-label="Daire listesi sayfaları">
+                                <ul class="pagination" id="pagination">
+                                    <!-- Sayfa numaraları JavaScript ile oluşturulacak -->
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -815,6 +832,148 @@
                 phoneInput.classList.add('is-invalid');
             }
         });
+
+        // Sayfalama ve arama için değişkenler
+        const itemsPerPage = 5;
+        let currentPage = 1;
+        const tableRows = document.querySelectorAll('.daire-row');
+        const totalItems = tableRows.length;
+        const searchInput = document.getElementById('searchInput');
+        
+        // Arama fonksiyonu
+        function filterTable() {
+            const searchTerm = searchInput.value.toLowerCase();
+            let visibleRows = 0;
+            
+            tableRows.forEach(row => {
+                const sakinAdi = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
+                if (sakinAdi.includes(searchTerm)) {
+                    row.dataset.searchMatch = 'true';
+                    visibleRows++;
+                } else {
+                    row.dataset.searchMatch = 'false';
+                }
+            });
+            
+            updatePagination(visibleRows);
+            showPage(1);
+        }
+        
+        // Sayfa gösterme fonksiyonu
+        function showPage(page) {
+            const start = (page - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            let visibleCount = 0;
+            let shownCount = 0;
+            
+            tableRows.forEach((row, index) => {
+                if (row.dataset.searchMatch === 'true') {
+                    visibleCount++;
+                    if (visibleCount > start && visibleCount <= end) {
+                        row.style.display = '';
+                        shownCount++;
+                    } else {
+                        row.style.display = 'none';
+                    }
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            
+            currentPage = page;
+            updateShowingInfo(start + 1, Math.min(start + shownCount, totalItems), visibleCount);
+            updatePaginationButtons();
+        }
+        
+        // Sayfalama butonlarını güncelleme
+        function updatePagination(visibleItems) {
+            const totalPages = Math.ceil(visibleItems / itemsPerPage);
+            const pagination = document.getElementById('pagination');
+            pagination.innerHTML = '';
+            
+            // Önceki sayfa butonu
+            const prevLi = document.createElement('li');
+            prevLi.className = 'page-item';
+            prevLi.innerHTML = `<a class="page-link" href="#" aria-label="Önceki"><span aria-hidden="true">&laquo;</span></a>`;
+            prevLi.onclick = () => showPage(currentPage - 1);
+            pagination.appendChild(prevLi);
+            
+            // Sayfa numaraları
+            for (let i = 1; i <= totalPages; i++) {
+                const li = document.createElement('li');
+                li.className = `page-item ${currentPage === i ? 'active' : ''}`;
+                li.innerHTML = `<a class="page-link" href="#">${i}</a>`;
+                li.onclick = () => showPage(i);
+                pagination.appendChild(li);
+            }
+            
+            // Sonraki sayfa butonu
+            const nextLi = document.createElement('li');
+            nextLi.className = 'page-item';
+            nextLi.innerHTML = `<a class="page-link" href="#" aria-label="Sonraki"><span aria-hidden="true">&raquo;</span></a>`;
+            nextLi.onclick = () => showPage(currentPage + 1);
+            pagination.appendChild(nextLi);
+        }
+        
+        // Gösterilen bilgisini güncelleme
+        function updateShowingInfo(start, end, total) {
+            document.getElementById('showingStart').textContent = start;
+            document.getElementById('showingEnd').textContent = end;
+            document.getElementById('totalItems').textContent = total;
+        }
+        
+        // Sayfalama butonlarının durumunu güncelleme
+        function updatePaginationButtons() {
+            const buttons = document.querySelectorAll('.pagination .page-item');
+            buttons.forEach(button => {
+                button.classList.remove('active');
+                if (button.textContent === currentPage.toString()) {
+                    button.classList.add('active');
+                }
+            });
+        }
+        
+        // Event listener'ları ekle
+        searchInput.addEventListener('input', filterTable);
+        
+        // İlk yükleme
+        filterTable();
     });
 </script>
+
+<style>
+/* Arama kutusu stili */
+.search-box {
+    position: relative;
+    min-width: 250px;
+}
+
+.search-box input {
+    padding-right: 30px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.pagination {
+    margin-bottom: 0;
+}
+
+.pagination .page-link {
+    padding: 0.5rem 0.75rem;
+    color: #4158D0;
+    background-color: #fff;
+    border: 1px solid #e2e8f0;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #4158D0;
+    border-color: #4158D0;
+    color: white;
+}
+
+.showing-info {
+    color: #64748b;
+    font-size: 0.9rem;
+}
+</style>
 {% endblock %}
