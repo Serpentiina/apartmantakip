@@ -1,0 +1,16 @@
+[0;1;31m●[0m apartmantakip.service - Gunicorn instance to serve Apartman Takip Sistemi
+     Loaded: loaded (/etc/systemd/system/apartmantakip.service; enabled; vendor preset: enabled)
+     Active: [0;1;31mfailed[0m (Result: exit-code) since Thu 2025-02-06 18:27:47 UTC; 2s ago
+    Process: 1373 ExecStart=/var/www/apartmantakip/venv/bin/gunicorn --workers 3 --bind 0.0.0.0:5000 app:app [0;1;31m(code=exited, status=4)[0m
+   Main PID: 1373 (code=exited, status=4)
+
+Şub 06 18:27:46 server.apartmantakip.com gunicorn[1377]: [2025-02-06 18:27:46 +0000] [1377] [INFO] Worker exiting (pid: 1377)
+Şub 06 18:27:46 server.apartmantakip.com gunicorn[1376]: Failed to find attribute 'app' in 'app'.
+Şub 06 18:27:46 server.apartmantakip.com gunicorn[1376]: [2025-02-06 18:27:46 +0000] [1376] [INFO] Worker exiting (pid: 1376)
+Şub 06 18:27:47 server.apartmantakip.com gunicorn[1373]: [2025-02-06 18:27:47 +0000] [1373] [ERROR] Worker (pid:1375) exited with code 4
+Şub 06 18:27:47 server.apartmantakip.com gunicorn[1373]: [2025-02-06 18:27:47 +0000] [1373] [ERROR] Worker (pid:1376) was sent SIGTERM!
+Şub 06 18:27:47 server.apartmantakip.com gunicorn[1373]: [2025-02-06 18:27:47 +0000] [1373] [ERROR] Worker (pid:1377) was sent SIGTERM!
+Şub 06 18:27:47 server.apartmantakip.com gunicorn[1373]: [2025-02-06 18:27:47 +0000] [1373] [ERROR] Shutting down: Master
+Şub 06 18:27:47 server.apartmantakip.com gunicorn[1373]: [2025-02-06 18:27:47 +0000] [1373] [ERROR] Reason: App failed to load.
+Şub 06 18:27:47 server.apartmantakip.com systemd[1]: [0;1;39m[0;1;31m[0;1;39mapartmantakip.service: Main process exited, code=exited, status=4/NOPERMISSION[0m
+Şub 06 18:27:47 server.apartmantakip.com systemd[1]: [0;1;38;5;185m[0;1;39m[0;1;38;5;185mapartmantakip.service: Failed with result 'exit-code'.[0m
