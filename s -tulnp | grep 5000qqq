@@ -1,0 +1,17 @@
+[0;1;32m●[0m apartmantakip.service - Gunicorn instance to serve Apartman Takip Sistemi
+     Loaded: loaded (/etc/systemd/system/apartmantakip.service; enabled; vendor preset: enabled)
+     Active: [0;1;32mactive (running)[0m since Fri 2025-02-07 07:41:42 UTC; 7s ago
+   Main PID: 4146 (gunicorn)
+     CGroup: /system.slice/apartmantakip.service
+             ├─4146 /var/www/apartmantakip/venv/bin/python3 /var/www/apartmantakip/venv/bin/gunicorn --workers 3 --bind 0.0.0.0:5000 run:app
+             ├─4148 /var/www/apartmantakip/venv/bin/python3 /var/www/apartmantakip/venv/bin/gunicorn --workers 3 --bind 0.0.0.0:5000 run:app
+             ├─4149 /var/www/apartmantakip/venv/bin/python3 /var/www/apartmantakip/venv/bin/gunicorn --workers 3 --bind 0.0.0.0:5000 run:app
+             └─4150 /var/www/apartmantakip/venv/bin/python3 /var/www/apartmantakip/venv/bin/gunicorn --workers 3 --bind 0.0.0.0:5000 run:app
+
+Şub 07 07:41:42 server.apartmantakip.com systemd[1]: Started Gunicorn instance to serve Apartman Takip Sistemi.
+Şub 07 07:41:43 server.apartmantakip.com gunicorn[4146]: [2025-02-07 07:41:43 +0000] [4146] [INFO] Starting gunicorn 23.0.0
+Şub 07 07:41:43 server.apartmantakip.com gunicorn[4146]: [2025-02-07 07:41:43 +0000] [4146] [INFO] Listening at: http://0.0.0.0:5000 (4146)
+Şub 07 07:41:43 server.apartmantakip.com gunicorn[4146]: [2025-02-07 07:41:43 +0000] [4146] [INFO] Using worker: sync
+Şub 07 07:41:43 server.apartmantakip.com gunicorn[4148]: [2025-02-07 07:41:43 +0000] [4148] [INFO] Booting worker with pid: 4148
+Şub 07 07:41:43 server.apartmantakip.com gunicorn[4149]: [2025-02-07 07:41:43 +0000] [4149] [INFO] Booting worker with pid: 4149
+Şub 07 07:41:43 server.apartmantakip.com gunicorn[4150]: [2025-02-07 07:41:43 +0000] [4150] [INFO] Booting worker with pid: 4150
