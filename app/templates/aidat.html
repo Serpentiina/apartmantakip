@@ -256,6 +256,13 @@
                            style="text-decoration: none;">
                             <i class="fas fa-trash"></i>
                         </a>
+                        {% if not aidat.odendi %}
+                            <button type="button" class="btn action-btn btn-warning" 
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#kismiOdemeModal{{ aidat.id }}">
+                                <i class="fas fa-money-bill"></i>
+                            </button>
+                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}
@@ -322,6 +329,37 @@
         </div>
     </div>
 </div>
+
+{% for aidat in aidatlar %}
+    {% if not aidat.odendi %}
+    <div class="modal fade" id="kismiOdemeModal{{ aidat.id }}" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Kısmi Ödeme - Daire {{ aidat.daire.daire_no }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="{{ url_for('aidat.kismi_odeme', id=aidat.id) }}" method="POST">
+                        <div class="mb-3">
+                            <label class="form-label">Toplam Borç</label>
+                            <input type="text" class="form-control" value="{{ "%.2f"|format(aidat.miktar) }} TL" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Ödenecek Miktar (TL)</label>
+                            <input type="number" name="odenen_miktar" class="form-control" 
+                                   step="0.01" min="0" max="{{ aidat.miktar }}" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-save"></i> Ödemeyi Kaydet
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+{% endfor %}
 
 {% block extra_js %}
 <script>

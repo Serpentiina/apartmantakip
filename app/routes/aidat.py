@@ -293,3 +293,41 @@ def borclu_daireler_listesi():
     borclu_daireler.sort(key=lambda x: x['en_eski_borc_tarihi'])
     
     return render_template('borclu_daireler.html', borclu_daireler=borclu_daireler)
+
+@aidat.route('/aidat/kismi-odeme/<int:id>', methods=['POST'])
+@login_required
+def kismi_odeme(id):
+    try:
+        aidat = Aidat.query.get_or_404(id)
+        odenen_miktar = float(request.form.get('odenen_miktar', 0))
+        
+        if odenen_miktar <= 0 or odenen_miktar > aidat.miktar:
+            flash('Geçersiz ödeme miktarı!', 'error')
+            return redirect(url_for('aidat.aidat_listesi'))
+        
+        # Kalan miktar için yeni aidat oluştur
+        kalan_miktar = aidat.miktar - odenen_miktar
+        if kalan_miktar > 0:
+            yeni_aidat = Aidat(
+                daire_id=aidat.daire_id,
+                miktar=kalan_miktar,
+                son_odeme_tarihi=aidat.son_odeme_tarihi,
+                odendi=False
+            )
+            db.session.add(yeni_aidat)
+        
+        # Mevcut aidatı güncelle
+        aidat.miktar = odenen_miktar
+        aidat.odendi = True
+        aidat.odeme_tarihi = datetime.utcnow()
+        
+        db.session.commit()
+        flash(f'{odenen_miktar:.2f} TL tutarında kısmi ödeme başarıyla kaydedildi!', 'success')
+        
+    except ValueError:
+        flash('Geçersiz ödeme miktarı!', 'error')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Ödeme işlemi sırasında bir hata oluştu: {str(e)}', 'error')
+    
+    return redirect(url_for('aidat.aidat_listesi'))

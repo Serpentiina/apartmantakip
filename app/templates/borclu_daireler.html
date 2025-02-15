@@ -2,11 +2,97 @@
 
 {% block title %}Borçlu Daireler{% endblock %}
 
+{% block extra_css %}
+<style>
+    .stats-card {
+        background: linear-gradient(45deg, #ff6b6b, #ff8787);
+        border-radius: 15px;
+        padding: 20px;
+        color: white;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 20px rgba(255, 107, 107, 0.2);
+    }
+    
+    .card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    }
+
+    .table thead th {
+        background-color: #f8f9fa;
+        border-bottom: 2px solid #dee2e6;
+    }
+
+    .table tbody tr:hover {
+        background-color: #f8f9fa;
+        transition: all 0.2s;
+    }
+
+    .btn-detail {
+        background: linear-gradient(45deg, #4facfe, #00f2fe);
+        border: none;
+        color: white;
+        padding: 8px 15px;
+        border-radius: 8px;
+        transition: all 0.3s;
+    }
+
+    .btn-detail:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);
+    }
+
+    .modal-content {
+        border-radius: 15px;
+        overflow: hidden;
+    }
+
+    .borc-ozet {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+
+    .borc-ozet-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .borc-ozet-item:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container mt-4">
+    <div class="stats-card">
+        <div class="row">
+            <div class="col-md-4">
+                <h5>Toplam Borçlu Daire</h5>
+                <h3>{{ borclu_daireler|length }}</h3>
+            </div>
+            <div class="col-md-4">
+                <h5>Toplam Borç</h5>
+                <h3>{{ "%.2f"|format(borclu_daireler|sum(attribute='toplam_borc')) }} ₺</h3>
+            </div>
+            <div class="col-md-4">
+                <h5>Ortalama Borç</h5>
+                <h3>{{ "%.2f"|format(borclu_daireler|sum(attribute='toplam_borc') / borclu_daireler|length) }} ₺</h3>
+            </div>
+        </div>
+    </div>
+
     <div class="card">
-        <div class="card-header bg-danger text-white">
-            <h4 class="mb-0">
+        <div class="card-header bg-white py-3">
+            <h4 class="mb-0 text-danger">
                 <i class="fas fa-exclamation-triangle"></i> Aidat Borcu Olan Daireler
             </h4>
         </div>
@@ -18,24 +104,24 @@
                             <th>Daire</th>
                             <th>Sakin</th>
                             <th>Toplam Borç</th>
-                            <th>Ödenmemiş Aidat Sayısı</th>
-                            <th>En Eski Borç Tarihi</th>
+                            <th>Ödenmemiş Aidat</th>
+                            <th>En Eski Borç</th>
                             <th>İşlemler</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for borclu in borclu_daireler %}
                         <tr>
-                            <td>{{ borclu.daire_no }}</td>
+                            <td><strong>Daire {{ borclu.daire_no }}</strong></td>
                             <td>{{ borclu.sakin_adi }}</td>
                             <td class="text-danger fw-bold">{{ "%.2f"|format(borclu.toplam_borc) }} ₺</td>
-                            <td>{{ borclu.odenmemis_aidat_sayisi }}</td>
+                            <td>{{ borclu.odenmemis_aidat_sayisi }} adet</td>
                             <td>{{ borclu.en_eski_borc_tarihi.strftime('%d.%m.%Y') }}</td>
                             <td>
-                                <button type="button" class="btn btn-sm btn-info" 
+                                <button type="button" class="btn btn-detail" 
                                         data-bs-toggle="modal" 
                                         data-bs-target="#borcDetayModal{{ borclu.daire_no }}">
-                                    <i class="fas fa-eye"></i> Detay
+                                    <i class="fas fa-eye me-1"></i> Detay
                                 </button>
                             </td>
                         </tr>
@@ -52,33 +138,55 @@
 <div class="modal fade" id="borcDetayModal{{ borclu.daire_no }}" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <div class="modal-header bg-danger text-white">
+            <div class="modal-header bg-gradient">
                 <h5 class="modal-title">
-                    Daire {{ borclu.daire_no }} - {{ borclu.sakin_adi }} Borç Detayı
+                    <i class="fas fa-home me-2"></i>Daire {{ borclu.daire_no }} - {{ borclu.sakin_adi }}
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Dönem</th>
-                            <th>Miktar</th>
-                            <th>Son Ödeme Tarihi</th>
-                            <th>Gecikme Süresi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for borc in borclu.borc_detaylari %}
-                        <tr>
-                            <td>{{ borc.donem }}</td>
-                            <td>{{ "%.2f"|format(borc.miktar) }} ₺</td>
-                            <td>{{ borc.son_odeme_tarihi.strftime('%d.%m.%Y') }}</td>
-                            <td>{{ borc.gecikme_suresi }} gün</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                <div class="borc-ozet">
+                    <div class="borc-ozet-item">
+                        <span>Toplam Borç:</span>
+                        <strong class="text-danger">{{ "%.2f"|format(borclu.toplam_borc) }} ₺</strong>
+                    </div>
+                    <div class="borc-ozet-item">
+                        <span>Ödenmemiş Aidat Sayısı:</span>
+                        <strong>{{ borclu.odenmemis_aidat_sayisi }} adet</strong>
+                    </div>
+                    <div class="borc-ozet-item">
+                        <span>En Eski Borç Tarihi:</span>
+                        <strong>{{ borclu.en_eski_borc_tarihi.strftime('%d.%m.%Y') }}</strong>
+                    </div>
+                </div>
+
+                <h6 class="mb-3">Borç Detayları</h6>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Dönem</th>
+                                <th>Miktar</th>
+                                <th>Son Ödeme Tarihi</th>
+                                <th>Gecikme</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for borc in borclu.borc_detaylari %}
+                            <tr>
+                                <td>{{ borc.donem }}</td>
+                                <td class="text-danger fw-bold">{{ "%.2f"|format(borc.miktar) }} ₺</td>
+                                <td>{{ borc.son_odeme_tarihi.strftime('%d.%m.%Y') }}</td>
+                                <td>
+                                    <span class="badge {% if borc.gecikme_suresi > 30 %}bg-danger{% else %}bg-warning{% endif %}">
+                                        {{ borc.gecikme_suresi }} gün
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
