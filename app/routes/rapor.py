@@ -18,7 +18,7 @@ locale.setlocale(locale.LC_ALL, 'tr_TR.UTF-8')
 # Yollar ve Konfigürasyon
 BASE_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 PDF_DIR = os.path.join(BASE_DIR, 'static', 'pdf')
-WKHTMLTOPDF_PATH = r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe'
+WKHTMLTOPDF_PATH = '/usr/bin/wkhtmltopdf'
 
 # PDF klasörünü oluştur (eğer yoksa)
 if not os.path.exists(PDF_DIR):
