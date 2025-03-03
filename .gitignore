@@ -1,0 +1,15 @@
+# Sanal ortam (virtual environment) klasörünü hariç tut
+venv/
+
+# Python önbellek (cache) dosyalarını hariç tut
+__pycache__/
+*.pyc
+
+# Veritabanı dosyasını hariç tut
+instance/apartman.db
+
+# Log dosyalarını hariç tut
+*.log
+
+# PDF ve diğer gereksiz dosyalar
+app/static/pdf/*.pdf
