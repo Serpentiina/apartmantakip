@@ -13,6 +13,12 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(128))
     is_admin = db.Column(db.Boolean, default=False)
+    apartman_ismi = db.Column(db.String(100), default="Apartman")
+    
+    # İlişkiler
+    daireler = db.relationship('Daire', backref='yonetici', lazy='dynamic')
+    giderler = db.relationship('Gider', backref='yonetici', lazy='dynamic')
+    duyurular = db.relationship('Duyuru', backref='yonetici', lazy='dynamic')
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -29,6 +35,7 @@ class Daire(db.Model):
     email = db.Column(db.String(120))
     aidat_durumu = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
 
     def __repr__(self):
         return f'<Daire {self.daire_no}>'
@@ -42,6 +49,7 @@ class Aidat(db.Model):
     odendi = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     daire = db.relationship('Daire', backref='aidatlar')
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
 
 class Gider(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -51,6 +59,7 @@ class Gider(db.Model):
     tarih = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     kategori = db.Column(db.String(50))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
 
 class Duyuru(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -58,3 +67,4 @@ class Duyuru(db.Model):
     icerik = db.Column(db.Text, nullable=False)
     onemli = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)

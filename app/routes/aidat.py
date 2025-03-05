@@ -1,5 +1,5 @@
 from flask import render_template, redirect, url_for, flash, request
-from flask_login import login_required
+from flask_login import login_required, current_user
 from app import db
 from app.models import Aidat, Daire
 from app.forms import AidatForm
@@ -26,13 +26,24 @@ def aidat_listesi():
     else:
         ay_sonu = date(today.year, today.month + 1, 1) - timedelta(days=1)
 
-    # İstatistikleri hesapla
-    toplam_aidat = db.session.query(func.sum(Aidat.miktar)).scalar() or 0
-    odenen_aidat = db.session.query(func.sum(Aidat.miktar)).filter(Aidat.odendi == True).scalar() or 0
-    odenmemis_aidat = db.session.query(func.sum(Aidat.miktar)).filter(Aidat.odendi == False).scalar() or 0
+    # İstatistikleri hesapla - kullanıcıya özel
+    toplam_aidat = db.session.query(func.sum(Aidat.miktar))\
+        .join(Daire)\
+        .filter(Daire.user_id == current_user.id)\
+        .scalar() or 0
+        
+    odenen_aidat = db.session.query(func.sum(Aidat.miktar))\
+        .join(Daire)\
+        .filter(Daire.user_id == current_user.id, Aidat.odendi == True)\
+        .scalar() or 0
+        
+    odenmemis_aidat = db.session.query(func.sum(Aidat.miktar))\
+        .join(Daire)\
+        .filter(Daire.user_id == current_user.id, Aidat.odendi == False)\
+        .scalar() or 0
 
-    # Sorguyu oluştur
-    aidatlar = db.session.query(Aidat).join(Daire)
+    # Sorguyu oluştur - kullanıcıya özel
+    aidatlar = db.session.query(Aidat).join(Daire).filter(Daire.user_id == current_user.id)
 
     if sakin_adi:
         aidatlar = aidatlar.filter(Daire.sakin_adi.ilike(f'%{sakin_adi}%'))
@@ -66,7 +77,8 @@ def aidat_listesi():
         # Her daire için ödenmemiş aidatları bul
         odenmemis_aidatlar = Aidat.query.filter_by(
             daire_id=daire.id,
-            odendi=False
+            odendi=False,
+            user_id=current_user.id  # Kullanıcı ID'sine göre filtrele
         ).order_by(Aidat.son_odeme_tarihi).all()
         
         # Eğer ödenmemiş aidat varsa
@@ -121,13 +133,22 @@ def aidat_listesi():
 @login_required
 def aidat_ekle():
     form = AidatForm()
-    form.daire_id.choices = [(d.id, f"Daire {d.daire_no} - {d.sakin_adi}") for d in Daire.query.all()]
+    # Sadece kullanıcıya ait daireleri listele
+    form.daire_id.choices = [(d.id, f"Daire {d.daire_no} - {d.sakin_adi}") 
+                            for d in Daire.query.filter_by(user_id=current_user.id).all()]
     
     if form.validate_on_submit():
+        # Dairenin kullanıcıya ait olup olmadığını kontrol et
+        daire = Daire.query.filter_by(id=form.daire_id.data, user_id=current_user.id).first()
+        if not daire:
+            flash('Bu işlem için yetkiniz yok!', 'danger')
+            return redirect(url_for('aidat.aidat_listesi'))
+            
         aidat = Aidat(
             daire_id=form.daire_id.data,
             miktar=form.miktar.data,
-            son_odeme_tarihi=form.son_odeme_tarihi.data
+            son_odeme_tarihi=form.son_odeme_tarihi.data,
+            user_id=current_user.id  # Kullanıcı ID'sini ekle
         )
         db.session.add(aidat)
         db.session.commit()
@@ -139,7 +160,12 @@ def aidat_ekle():
 @aidat.route('/aidat/odendi/<int:id>')
 @login_required
 def aidat_odendi(id):
-    aidat = Aidat.query.get_or_404(id)
+    # Kullanıcıya ait aidatı bul
+    aidat = Aidat.query.join(Daire).filter(
+        Aidat.id == id,
+        Daire.user_id == current_user.id
+    ).first_or_404()
+    
     aidat.odendi = True
     aidat.odeme_tarihi = datetime.utcnow()
     db.session.commit()
@@ -150,7 +176,8 @@ def aidat_odendi(id):
 @login_required
 def toplu_aidat_ekle():
     try:
-        daireler = Daire.query.all()
+        # Kullanıcıya ait daireleri getir
+        daireler = Daire.query.filter_by(user_id=current_user.id).all()
         
         # Varsayılan miktar 700 TL
         miktar = float(request.form.get('miktar', 700))
@@ -168,9 +195,10 @@ def toplu_aidat_ekle():
         for daire in daireler:
             yeni_aidat = Aidat(
                 daire_id=daire.id,
-                miktar=700,
+                miktar=miktar,
                 son_odeme_tarihi=son_odeme,
-                odendi=False
+                odendi=False,
+                user_id=current_user.id  # Kullanıcı ID'sini ekle
             )
             db.session.add(yeni_aidat)
         
@@ -198,11 +226,18 @@ def aidat_sil(daire_id, tarih):
         else:
             ay_bitis = datetime(tarih_obj.year, tarih_obj.month + 1, 1)
         
+        # Önce dairenin kullanıcıya ait olup olmadığını kontrol et
+        daire = Daire.query.filter_by(id=daire_id, user_id=current_user.id).first()
+        if not daire:
+            flash('Bu işlem için yetkiniz yok!', 'danger')
+            return redirect(url_for('aidat.aidat_listesi'))
+        
         # Aidatı bul - belirli ay aralığındaki kayıtları bul
         aidat = Aidat.query.filter(
             Aidat.daire_id == daire_id,
             Aidat.son_odeme_tarihi >= ay_baslangic,
-            Aidat.son_odeme_tarihi < ay_bitis
+            Aidat.son_odeme_tarihi < ay_bitis,
+            Aidat.user_id == current_user.id  # Kullanıcı ID'sine göre filtrele
         ).first()
 
         if not aidat:
@@ -233,8 +268,11 @@ def secilenleri_sil():
             flash('Silinecek aidat seçilmedi!', 'error')
             return redirect(url_for('aidat.aidat_listesi'))
         
-        # Seçilen aidatları sil
-        silinen_count = Aidat.query.filter(Aidat.id.in_(aidat_ids)).delete(synchronize_session=False)
+        # Seçilen aidatları sil - kullanıcıya özel
+        silinen_count = Aidat.query.filter(
+            Aidat.id.in_(aidat_ids),
+            Aidat.user_id == current_user.id
+        ).delete(synchronize_session=False)
         db.session.commit()
         
         flash(f'{silinen_count} adet aidat başarıyla silindi!', 'success')
@@ -248,7 +286,8 @@ def secilenleri_sil():
 @aidat.route('/borclu-daireler')
 @login_required
 def borclu_daireler_listesi():
-    daireler = Daire.query.all()
+    # Kullanıcıya ait daireleri getir
+    daireler = Daire.query.filter_by(user_id=current_user.id).all()
     borclu_daireler = []
     
     # Tüm daireleri döngüye al
@@ -256,7 +295,8 @@ def borclu_daireler_listesi():
         # Her daire için ödenmemiş aidatları bul
         odenmemis_aidatlar = Aidat.query.filter_by(
             daire_id=daire.id,
-            odendi=False
+            odendi=False,
+            user_id=current_user.id  # Kullanıcı ID'sine göre filtrele
         ).order_by(Aidat.son_odeme_tarihi).all()
         
         # Eğer ödenmemiş aidat varsa
@@ -298,7 +338,12 @@ def borclu_daireler_listesi():
 @login_required
 def kismi_odeme(id):
     try:
-        aidat = Aidat.query.get_or_404(id)
+        # Kullanıcıya ait aidatı bul
+        aidat = Aidat.query.join(Daire).filter(
+            Aidat.id == id,
+            Daire.user_id == current_user.id
+        ).first_or_404()
+        
         odenen_miktar = float(request.form.get('odenen_miktar', 0))
         
         if odenen_miktar <= 0 or odenen_miktar > aidat.miktar:
@@ -312,7 +357,8 @@ def kismi_odeme(id):
                 daire_id=aidat.daire_id,
                 miktar=kalan_miktar,
                 son_odeme_tarihi=aidat.son_odeme_tarihi,
-                odendi=False
+                odendi=False,
+                user_id=current_user.id  # Kullanıcı ID'sini ekle
             )
             db.session.add(yeni_aidat)
         

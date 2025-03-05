@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, send_file, jsonify
-from flask_login import login_required
+from flask_login import login_required, current_user
 from app import db
 from app.models import Aidat, Gider, Daire
 from sqlalchemy import func
@@ -32,20 +32,35 @@ def rapor_sayfasi():
         baslangic = datetime.now() - timedelta(days=30)
         bitis = datetime.now()
         
-        # Temel verileri hazırla
-        toplam_aidat = db.session.query(func.sum(Aidat.miktar)).scalar() or 0
-        odenen_aidat = db.session.query(func.sum(Aidat.miktar)).filter(Aidat.odeme_tarihi.isnot(None)).scalar() or 0
-        toplam_gider = db.session.query(func.sum(Gider.miktar)).scalar() or 0
+        # Temel verileri hazırla - kullanıcıya özel
+        toplam_aidat = db.session.query(func.sum(Aidat.miktar))\
+            .join(Daire)\
+            .filter(Daire.user_id == current_user.id)\
+            .scalar() or 0
+            
+        odenen_aidat = db.session.query(func.sum(Aidat.miktar))\
+            .join(Daire)\
+            .filter(Daire.user_id == current_user.id, Aidat.odeme_tarihi.isnot(None))\
+            .scalar() or 0
+            
+        toplam_gider = db.session.query(func.sum(Gider.miktar))\
+            .filter(Gider.user_id == current_user.id)\
+            .scalar() or 0
         
-        # Daire bazlı aidat durumu
-        daireler = Daire.query.all()
+        # Daire bazlı aidat durumu - kullanıcıya özel
+        daireler = Daire.query.filter_by(user_id=current_user.id).all()
         daire_aidatlari = []
         for daire in daireler:
-            toplam = db.session.query(func.sum(Aidat.miktar)).filter(Aidat.daire_id == daire.id).scalar() or 0
-            odenen = db.session.query(func.sum(Aidat.miktar)).filter(
-                Aidat.daire_id == daire.id,
-                Aidat.odeme_tarihi.isnot(None)
-            ).scalar() or 0
+            toplam = db.session.query(func.sum(Aidat.miktar))\
+                .filter(Aidat.daire_id == daire.id)\
+                .scalar() or 0
+                
+            odenen = db.session.query(func.sum(Aidat.miktar))\
+                .filter(
+                    Aidat.daire_id == daire.id,
+                    Aidat.odeme_tarihi.isnot(None)
+                )\
+                .scalar() or 0
             
             daire_aidatlari.append({
                 'daire_no': daire.daire_no,
@@ -64,13 +79,18 @@ def rapor_sayfasi():
             else:
                 ay_bitis = datetime(tarih.year, tarih.month + 1, 1)
             
-            aidat_toplam = db.session.query(func.sum(Aidat.miktar)).filter(
-                Aidat.odeme_tarihi.between(ay_baslangic, ay_bitis)
-            ).scalar() or 0
+            aidat_toplam = db.session.query(func.sum(Aidat.miktar))\
+                .join(Daire)\
+                .filter(
+                    Daire.user_id == current_user.id,
+                    Aidat.odeme_tarihi.between(ay_baslangic, ay_bitis)
+                ).scalar() or 0
             
-            gider_toplam = db.session.query(func.sum(Gider.miktar)).filter(
-                Gider.tarih.between(ay_baslangic, ay_bitis)
-            ).scalar() or 0
+            gider_toplam = db.session.query(func.sum(Gider.miktar))\
+                .filter(
+                    Gider.user_id == current_user.id,
+                    Gider.tarih.between(ay_baslangic, ay_bitis)
+                ).scalar() or 0
             
             son_12_ay.append({
                 'ay': tarih.strftime('%B %Y'),
@@ -82,7 +102,8 @@ def rapor_sayfasi():
         gider_kategorileri = db.session.query(
             Gider.kategori,
             func.sum(Gider.miktar).label('toplam')
-        ).group_by(Gider.kategori).all()
+        ).filter(Gider.user_id == current_user.id)\
+        .group_by(Gider.kategori).all()
 
         gider_kategori_list = [
             {
@@ -119,27 +140,39 @@ def rapor_sayfasi():
 @login_required
 def rapor_pdf():
     try:
+        # Sabit tarih aralığı kullan (filtre kaldırıldığı için)
         baslangic = datetime.now() - timedelta(days=30)
         bitis = datetime.now()
         
-        # Verileri hazırla
-        aidat_toplam = db.session.query(func.sum(Aidat.miktar)).scalar() or 0
-        odenen_aidat = db.session.query(func.sum(Aidat.miktar)).filter(
-            Aidat.odeme_tarihi.isnot(None)
-        ).scalar() or 0
-        gider_toplam = db.session.query(func.sum(Gider.miktar)).scalar() or 0
+        # Temel verileri hazırla - kullanıcıya özel
+        toplam_aidat = db.session.query(func.sum(Aidat.miktar))\
+            .join(Daire)\
+            .filter(Daire.user_id == current_user.id)\
+            .scalar() or 0
+            
+        odenen_aidat = db.session.query(func.sum(Aidat.miktar))\
+            .join(Daire)\
+            .filter(Daire.user_id == current_user.id, Aidat.odeme_tarihi.isnot(None))\
+            .scalar() or 0
+            
+        toplam_gider = db.session.query(func.sum(Gider.miktar))\
+            .filter(Gider.user_id == current_user.id)\
+            .scalar() or 0
         
-        # Daire bazlı aidat durumu
-        daireler = Daire.query.all()
+        # Daire bazlı aidat durumu - kullanıcıya özel
+        daireler = Daire.query.filter_by(user_id=current_user.id).all()
         daire_aidatlari = []
         for daire in daireler:
-            toplam = db.session.query(func.sum(Aidat.miktar)).filter(
-                Aidat.daire_id == daire.id
-            ).scalar() or 0
-            odenen = db.session.query(func.sum(Aidat.miktar)).filter(
-                Aidat.daire_id == daire.id,
-                Aidat.odeme_tarihi.isnot(None)
-            ).scalar() or 0
+            toplam = db.session.query(func.sum(Aidat.miktar))\
+                .filter(Aidat.daire_id == daire.id)\
+                .scalar() or 0
+                
+            odenen = db.session.query(func.sum(Aidat.miktar))\
+                .filter(
+                    Aidat.daire_id == daire.id,
+                    Aidat.odeme_tarihi.isnot(None)
+                )\
+                .scalar() or 0
             
             daire_aidatlari.append({
                 'daire_no': daire.daire_no,
@@ -152,19 +185,17 @@ def rapor_pdf():
         gider_kategorileri = db.session.query(
             Gider.kategori,
             func.sum(Gider.miktar).label('toplam')
-        ).group_by(Gider.kategori).all()
+        ).filter(Gider.user_id == current_user.id)\
+        .group_by(Gider.kategori).all()
         
-        # HTML'i oluştur
-        html = render_template('rapor_pdf.html',
-            baslangic=baslangic,
-            bitis=bitis,
-            aidat_toplam=aidat_toplam,
-            odenen_aidat=odenen_aidat,
-            gider_toplam=gider_toplam,
-            daire_aidatlari=daire_aidatlari,
-            gider_kategorileri=gider_kategorileri,
-            datetime=datetime
-        )
+        # HTML şablonunu render et
+        html = render_template('rapor_pdf.html', 
+                              baslangic=baslangic,
+                              bitis=bitis,
+                              aidat_toplam=toplam_aidat,
+                              odenen_aidat=odenen_aidat,
+                              gider_toplam=toplam_gider,
+                              apartman_ismi=current_user.apartman_ismi)
         
         # PDF dosya adını oluştur
         pdf_adi = f'rapor_{baslangic.strftime("%Y%m%d")}_{bitis.strftime("%Y%m%d")}.pdf'
@@ -199,8 +230,13 @@ def aidat_grafik_data():
             else:
                 ay_bitis = datetime(tarih.year, tarih.month + 1, 1)
             
+            # Kullanıcıya özel aidat verilerini getir
             aidat_toplam = db.session.query(func.sum(Aidat.miktar))\
-                .filter(Aidat.odeme_tarihi.between(ay_baslangic, ay_bitis))\
+                .join(Daire)\
+                .filter(
+                    Aidat.odeme_tarihi.between(ay_baslangic, ay_bitis),
+                    Daire.user_id == current_user.id
+                )\
                 .scalar() or 0
             
             son_12_ay.append({

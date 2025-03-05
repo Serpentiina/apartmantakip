@@ -5,94 +5,170 @@
 {% block extra_css %}
 <style>
     :root {
-        --primary-color: #2C3E50;
-        --secondary-color: #6c757d;
+        --primary-color: #3498db;
+        --secondary-color: #2c3e50;
+        --accent-color: #e74c3c;
         --bg-color: #ffffff;
-        --border-radius: 15px;
+        --light-bg: #f8f9fa;
+        --border-radius: 12px;
+        --box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+        --hover-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        --transition: all 0.3s ease;
     }
 
     /* Genel sayfa stili */
     body {
         background-color: #f4f6f9;
+        color: #333;
+    }
+
+    .page-header {
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .page-header h3 {
+        font-weight: 700;
+        color: var(--secondary-color);
     }
 
     /* Kategori Kartları */
     .category-stats {
-        margin-bottom: 2rem;
+        margin-bottom: 2.5rem;
     }
 
     .category-card {
         background: var(--bg-color);
         border-radius: var(--border-radius);
-        padding: 1.2rem;
+        padding: 1.5rem;
         height: 100%;
-        transition: all 0.3s ease;
-        border-left: 4px solid;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        transition: var(--transition);
+        border: none;
+        box-shadow: var(--box-shadow);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .category-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        transition: var(--transition);
     }
 
     .category-card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        box-shadow: var(--hover-shadow);
     }
 
     .category-card .title {
-        font-size: 1rem;
+        font-size: 0.9rem;
+        font-weight: 600;
         color: var(--secondary-color);
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.75rem;
         display: flex;
         align-items: center;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
 
     .category-card .title i {
-        margin-right: 0.5rem;
+        margin-right: 0.75rem;
+        font-size: 1.1rem;
+        opacity: 0.8;
     }
 
     .category-card .value {
-        font-size: 1.5rem;
-        font-weight: 600;
+        font-size: 1.8rem;
+        font-weight: 700;
         color: var(--primary-color);
     }
 
     /* Kategori Renkleri */
-    .cat-elektrik { border-color: #FF6B6B; }
-    .cat-su { border-color: #4ECDC4; }
-    .cat-temizlik { border-color: #45B7D1; }
-    .cat-asansor { border-color: #96CEB4; }
-    .cat-tamirat { border-color: #FFEEAD; }
-    .cat-diger { border-color: #D4A5A5; }
+    .cat-elektrik::before { background-color: #FF6B6B; }
+    .cat-su::before { background-color: #4ECDC4; }
+    .cat-temizlik::before { background-color: #45B7D1; }
+    .cat-asansor::before { background-color: #96CEB4; }
+    .cat-tamirat::before { background-color: #FFEEAD; }
+    .cat-apartman_gorevlisi::before { background-color: #6A89CC; }
+    .cat-yonetici_maasi::before { background-color: #82CCDD; }
+    .cat-stopaj::before { background-color: #B8E994; }
+    .cat-sgk::before { background-color: #F8C291; }
+    .cat-diger::before { background-color: #D4A5A5; }
 
     /* Gider Tablosu */
     .gider-table {
         background: var(--bg-color);
         border-radius: var(--border-radius);
-        padding: 1.5rem;
-        box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+        padding: 2rem;
+        box-shadow: var(--box-shadow);
+        margin-bottom: 2.5rem;
+    }
+
+    .gider-table .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .gider-table .header h4 {
+        font-weight: 700;
+        color: var(--secondary-color);
+        margin-bottom: 0;
+    }
+
+    .table {
+        border-collapse: separate;
+        border-spacing: 0 8px;
     }
 
     .table thead th {
-        background: #f8f9fa;
-        padding: 1rem;
+        background: var(--light-bg);
+        padding: 1rem 1.5rem;
         font-weight: 600;
-        color: var(--primary-color);
+        color: var(--secondary-color);
         border: none;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
     }
 
     .table tbody tr {
-        transition: all 0.2s ease;
+        background-color: var(--bg-color);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        transition: var(--transition);
+        margin-bottom: 8px;
+    }
+
+    .table tbody td {
+        padding: 1rem 1.5rem;
+        border: none;
+        vertical-align: middle;
     }
 
     .table tbody tr:hover {
-        background-color: #f8f9fa;
-        transform: scale(1.01);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
     }
 
-    /* Kategori Badge’leri */
+    /* Kategori Badge'leri */
     .category-badge {
         padding: 0.5rem 1rem;
         border-radius: 50px;
-        font-weight: 500;
-        font-size: 0.85rem;
+        font-weight: 600;
+        font-size: 0.8rem;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .category-badge i {
+        margin-right: 0.5rem;
+        font-size: 0.9rem;
     }
 
     .cat-badge-elektrik {
@@ -119,34 +195,163 @@
         background-color: rgba(255, 238, 173, 0.1);
         color: #FFEEAD;
     }
+    
+    .cat-badge-apartman_gorevlisi {
+        background-color: rgba(106, 137, 204, 0.1);
+        color: #6A89CC;
+    }
+    
+    .cat-badge-yonetici_maasi {
+        background-color: rgba(130, 204, 221, 0.1);
+        color: #82CCDD;
+    }
+    
+    .cat-badge-stopaj {
+        background-color: rgba(184, 233, 148, 0.1);
+        color: #B8E994;
+    }
+    
+    .cat-badge-sgk {
+        background-color: rgba(248, 194, 145, 0.1);
+        color: #F8C291;
+    }
 
     .cat-badge-diger {
         background-color: rgba(212, 165, 165, 0.1);
         color: #D4A5A5;
     }
 
-    /* Silme Butonu */
+    /* Butonlar */
+    .btn {
+        border-radius: 8px;
+        padding: 0.6rem 1.2rem;
+        font-weight: 600;
+        transition: var(--transition);
+    }
+
+    .btn-primary {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+
+    .btn-primary:hover {
+        background-color: #2980b9;
+        border-color: #2980b9;
+        transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+        background-color: #f8f9fa;
+        border-color: #f8f9fa;
+        color: #495057;
+    }
+
+    .btn-secondary:hover {
+        background-color: #e9ecef;
+        border-color: #e9ecef;
+        color: #212529;
+        transform: translateY(-2px);
+    }
+
     .btn-delete {
         background-color: rgba(220, 53, 69, 0.1);
         color: #dc3545;
         border: none;
-        padding: 0.5rem;
+        padding: 0.6rem;
         border-radius: 8px;
-        transition: all 0.2s ease;
+        transition: var(--transition);
     }
 
     .btn-delete:hover {
         background-color: rgba(220, 53, 69, 0.2);
         transform: translateY(-2px);
     }
+
+    /* Filtre Alanı */
+    .filter-card {
+        background: var(--bg-color);
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: var(--box-shadow);
+    }
+
+    .form-control, .form-select {
+        border-radius: 8px;
+        padding: 0.6rem 1rem;
+        border: 1px solid #e9ecef;
+    }
+
+    .form-control:focus, .form-select:focus {
+        box-shadow: 0 0 0 0.25rem rgba(52, 152, 219, 0.25);
+        border-color: var(--primary-color);
+    }
+
+    /* Grafikler */
+    .chart-card {
+        background: var(--bg-color);
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        box-shadow: var(--box-shadow);
+        height: 100%;
+    }
+
+    .chart-card .card-title {
+        font-weight: 700;
+        color: var(--secondary-color);
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+
+    /* Pagination */
+    .pagination {
+        margin-top: 1.5rem;
+    }
+
+    .pagination .page-item.active .page-link {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+
+    .pagination .page-link {
+        color: var(--primary-color);
+        border-radius: 8px;
+        margin: 0 3px;
+    }
+
+    /* Modal */
+    .modal-content {
+        border-radius: var(--border-radius);
+        border: none;
+        box-shadow: var(--hover-shadow);
+    }
+
+    .modal-header {
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        padding: 1.5rem;
+    }
+
+    .modal-body {
+        padding: 1.5rem;
+    }
+
+    .modal-title {
+        font-weight: 700;
+        color: var(--secondary-color);
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container my-4">
+    <div class="page-header">
+        <h3><i class="fas fa-file-invoice me-2"></i>Gider Yönetimi</h3>
+    </div>
+
     <!-- Kategori İstatistik Kartları -->
     <div class="category-stats">
-        <div class="row g-3">
+        <div class="row g-4">
             {% for kategori, toplam in kategori_toplamlar.items() %}
             <div class="col-6 col-md-2">
                 <div class="category-card cat-{{ kategori }}">
@@ -161,6 +366,14 @@
                             <i class="fas fa-arrow-up"></i>
                         {% elif kategori == 'tamirat' %}
                             <i class="fas fa-tools"></i>
+                        {% elif kategori == 'apartman_gorevlisi' %}
+                            <i class="fas fa-user-tie"></i>
+                        {% elif kategori == 'yonetici_maasi' %}
+                            <i class="fas fa-user-shield"></i>
+                        {% elif kategori == 'stopaj' %}
+                            <i class="fas fa-percentage"></i>
+                        {% elif kategori == 'sgk' %}
+                            <i class="fas fa-heartbeat"></i>
                         {% else %}
                             <i class="fas fa-ellipsis-h"></i>
                         {% endif %}
@@ -175,21 +388,21 @@
 
     <!-- Gider Tablosu ve İşlemler -->
     <div class="gider-table">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h4 class="mb-0">Gider Listesi</h4>
+        <div class="header">
+            <h4>Gider Listesi</h4>
             <div>
                 <button type="button" class="btn btn-secondary me-2" data-bs-toggle="collapse" data-bs-target="#filterCollapse">
-                    <i class="fas fa-filter"></i> Filtrele
+                    <i class="fas fa-filter me-1"></i> Filtrele
                 </button>
                 <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#giderEkleModal">
-                    <i class="fas fa-plus"></i> Yeni Gider
+                    <i class="fas fa-plus me-1"></i> Yeni Gider
                 </button>
             </div>
         </div>
 
         <!-- Filtreleme Alanı -->
         <div class="collapse mb-4" id="filterCollapse">
-            <div class="card card-body">
+            <div class="filter-card">
                 <form method="GET" class="row g-3">
                     <div class="col-md-3">
                         <label class="form-label">Kategori</label>
@@ -218,8 +431,12 @@
                                value="{{ request.args.get('min_tutar', '') }}">
                     </div>
                     <div class="col-12">
-                        <button type="submit" class="btn btn-primary">Filtrele</button>
-                        <a href="{{ url_for('gider.gider_listesi') }}" class="btn btn-outline-secondary">Sıfırla</a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search me-1"></i> Filtrele
+                        </button>
+                        <a href="{{ url_for('gider.gider_listesi') }}" class="btn btn-secondary ms-2">
+                            <i class="fas fa-redo me-1"></i> Sıfırla
+                        </a>
                     </div>
                 </form>
             </div>
@@ -228,7 +445,7 @@
         <!-- Toplu İşlem Butonları -->
         <div class="mb-3">
             <button id="deleteSelected" class="btn btn-danger" disabled>
-                <i class="fas fa-trash"></i> Seçilenleri Sil
+                <i class="fas fa-trash me-1"></i> Seçilenleri Sil
             </button>
         </div>
 
@@ -236,7 +453,7 @@
             <table class="table">
                 <thead>
                     <tr>
-                        <th>
+                        <th style="width: 40px;">
                             <input type="checkbox" id="selectAll" class="form-check-input">
                         </th>
                         <th>Başlık</th>
@@ -244,7 +461,7 @@
                         <th>Açıklama</th>
                         <th>Miktar</th>
                         <th>Tarih</th>
-                        <th>İşlemler</th>
+                        <th style="width: 80px;">İşlemler</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -253,14 +470,35 @@
                         <td>
                             <input type="checkbox" class="form-check-input gider-checkbox" value="{{ gider.id }}">
                         </td>
-                        <td>{{ gider.baslik }}</td>
+                        <td><strong>{{ gider.baslik }}</strong></td>
                         <td>
                             <span class="category-badge cat-badge-{{ gider.kategori }}">
+                                {% if gider.kategori == 'elektrik' %}
+                                    <i class="fas fa-bolt"></i>
+                                {% elif gider.kategori == 'su' %}
+                                    <i class="fas fa-tint"></i>
+                                {% elif gider.kategori == 'temizlik' %}
+                                    <i class="fas fa-broom"></i>
+                                {% elif gider.kategori == 'asansor' %}
+                                    <i class="fas fa-arrow-up"></i>
+                                {% elif gider.kategori == 'tamirat' %}
+                                    <i class="fas fa-tools"></i>
+                                {% elif gider.kategori == 'apartman_gorevlisi' %}
+                                    <i class="fas fa-user-tie"></i>
+                                {% elif gider.kategori == 'yonetici_maasi' %}
+                                    <i class="fas fa-user-shield"></i>
+                                {% elif gider.kategori == 'stopaj' %}
+                                    <i class="fas fa-percentage"></i>
+                                {% elif gider.kategori == 'sgk' %}
+                                    <i class="fas fa-heartbeat"></i>
+                                {% else %}
+                                    <i class="fas fa-ellipsis-h"></i>
+                                {% endif %}
                                 {{ gider.kategori|title }}
                             </span>
                         </td>
                         <td>{{ gider.aciklama }}</td>
-                        <td>{{ "%.2f"|format(gider.miktar) }} ₺</td>
+                        <td><strong>{{ "%.2f"|format(gider.miktar) }} ₺</strong></td>
                         <td>{{ gider.tarih.strftime('%d.%m.%Y') }}</td>
                         <td>
                             <a href="{{ url_for('gider.gider_sil', id=gider.id) }}" 
@@ -296,24 +534,20 @@
     </div>
 
     <!-- Grafikler -->
-    <div class="row mb-4 mt-4">
+    <div class="row mb-4 mt-4 g-4">
         <div class="col-md-6">
-            <div class="card">
-                <div class="card-body" style="height: 500px;">
-                    <h5 class="card-title">Aylık Gider Dağılımı</h5>
-                    <div style="position: relative; height: 450px;">
-                        <canvas id="aylikGiderChart"></canvas>
-                    </div>
+            <div class="chart-card">
+                <h5 class="card-title">Aylık Gider Dağılımı</h5>
+                <div style="position: relative; height: 450px;">
+                    <canvas id="aylikGiderChart"></canvas>
                 </div>
             </div>
         </div>
         <div class="col-md-6">
-            <div class="card">
-                <div class="card-body" style="height: 500px;">
-                    <h5 class="card-title">Kategori Bazlı Dağılım</h5>
-                    <div style="position: relative; height: 450px;">
-                        <canvas id="kategoriChart"></canvas>
-                    </div>
+            <div class="chart-card">
+                <h5 class="card-title">Kategori Bazlı Dağılım</h5>
+                <div style="position: relative; height: 450px;">
+                    <canvas id="kategoriChart"></canvas>
                 </div>
             </div>
         </div>
@@ -325,7 +559,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Yeni Gider Ekle</h5>
+                <h5 class="modal-title"><i class="fas fa-plus-circle me-2"></i>Yeni Gider Ekle</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
@@ -333,7 +567,7 @@
                     {{ form.hidden_tag() }}
                     <div class="mb-3">
                         <label class="form-label">Başlık</label>
-                        {{ form.baslik(class="form-control") }}
+                        {{ form.baslik(class="form-control", placeholder="Gider başlığını girin") }}
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Kategori</label>
@@ -341,14 +575,14 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Açıklama</label>
-                        {{ form.aciklama(class="form-control") }}
+                        {{ form.aciklama(class="form-control", placeholder="Gider açıklamasını girin") }}
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Miktar (₺)</label>
-                        {{ form.miktar(class="form-control", type="number", step="0.01") }}
+                        {{ form.miktar(class="form-control", type="number", step="0.01", placeholder="0.00") }}
                     </div>
                     <button type="submit" class="btn btn-primary w-100">
-                        <i class="fas fa-save"></i> Kaydet
+                        <i class="fas fa-save me-1"></i> Kaydet
                     </button>
                 </form>
             </div>
@@ -362,29 +596,40 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Aylık Gider Grafiği
     const aylikCtx = document.getElementById('aylikGiderChart');
+    
+    // @ts-ignore - Jinja2 template değişkeni
     const aylikGiderData = {{ chart_data.aylik_toplam.giderler|tojson|safe }};
+    
     if (aylikCtx && aylikGiderData.reduce((a, b) => a + b, 0) > 0) {
         new Chart(aylikCtx, {
             type: 'bar',
             data: {
+                // @ts-ignore - Jinja2 template değişkeni
                 labels: {{ chart_data.aylik_toplam.labels|tojson|safe }},
                 datasets: [{
                     label: 'Aylık Toplam Gider',
                     data: aylikGiderData,
-                    backgroundColor: 'rgba(75, 192, 192, 0.5)',
-                    borderColor: 'rgb(75, 192, 192)',
+                    backgroundColor: 'rgba(52, 152, 219, 0.7)',
+                    borderColor: 'rgb(52, 152, 219)',
                     borderWidth: 1
                 },
                 {
                     label: 'Aylık Ödenen Aidat',
+                    // @ts-ignore - Jinja2 template değişkeni
                     data: {{ chart_data.aylik_toplam.aidatlar|tojson|safe }},
-                    backgroundColor: 'rgba(255, 99, 132, 0.5)',
-                    borderColor: 'rgb(255, 99, 132)',
+                    backgroundColor: 'rgba(231, 76, 60, 0.7)',
+                    borderColor: 'rgb(231, 76, 60)',
                     borderWidth: 1
                 }]
             },
             options: {
                 responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top'
+                    }
+                },
                 scales: {
                     y: {
                         beginAtZero: true,
@@ -401,31 +646,39 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Kategori Dağılım Grafiği
     const kategoriCtx = document.getElementById('kategoriChart');
+    
+    // @ts-ignore - Jinja2 template değişkeni
     const kategoriData = {{ chart_data.kategori_dagilim.data|tojson|safe }};
+    
     if (kategoriCtx && kategoriData.reduce((a, b) => a + b, 0) > 0) {
         new Chart(kategoriCtx, {
-            type: 'pie',
+            type: 'doughnut',
             data: {
+                // @ts-ignore - Jinja2 template değişkeni
                 labels: {{ chart_data.kategori_dagilim.labels|tojson|safe }},
                 datasets: [{
                     data: kategoriData,
                     backgroundColor: [
-                        'rgb(255, 99, 132)',
-                        'rgb(54, 162, 235)',
-                        'rgb(255, 206, 86)',
-                        'rgb(75, 192, 192)',
-                        'rgb(153, 102, 255)',
-                        'rgb(255, 159, 64)'
-                    ]
+                        'rgb(255, 107, 107)',
+                        'rgb(78, 205, 196)',
+                        'rgb(69, 183, 209)',
+                        'rgb(150, 206, 180)',
+                        'rgb(255, 238, 173)',
+                        'rgb(212, 165, 165)'
+                    ],
+                    borderWidth: 2,
+                    borderColor: '#ffffff'
                 }]
             },
             options: {
                 responsive: true,
+                maintainAspectRatio: false,
                 plugins: {
                     legend: {
                         position: 'right'
                     }
-                }
+                },
+                cutout: '60%'
             }
         });
     }
@@ -452,7 +705,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateDeleteButton() {
         const selectedCount = Array.from(giderCheckboxes).filter(cb => cb.checked).length;
         deleteSelectedBtn.disabled = selectedCount === 0;
-        deleteSelectedBtn.innerHTML = `<i class="fas fa-trash"></i> Seçilenleri Sil (${selectedCount})`;
+        deleteSelectedBtn.innerHTML = `<i class="fas fa-trash me-1"></i> Seçilenleri Sil (${selectedCount})`;
     }
 
     deleteSelectedBtn.addEventListener('click', function() {
@@ -460,6 +713,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (selectedIds.length && confirm(`${selectedIds.length} gideri silmek istediğinizden emin misiniz?`)) {
             const form = document.createElement('form');
             form.method = 'POST';
+            
+            // @ts-ignore - Jinja2 template değişkeni
             form.action = "{{ url_for('gider.toplu_gider_sil') }}";
 
             const input = document.createElement('input');

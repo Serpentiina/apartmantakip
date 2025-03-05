@@ -1,7 +1,7 @@
 from flask import render_template, redirect, url_for, flash, request
-from flask_login import login_required
+from flask_login import login_required, current_user
 from app import db
-from app.models import Gider, Aidat
+from app.models import Gider, Aidat, Daire
 from app.forms import GiderForm
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
@@ -16,14 +16,16 @@ def gider_listesi():
     bugun = datetime.now()
     baslangic_tarihi = (bugun - relativedelta(months=11)).replace(day=1)
     
-    # Giderleri getir
+    # Giderleri getir - kullanıcıya özel
     giderler = Gider.query.filter(
-        Gider.tarih >= baslangic_tarihi
+        Gider.tarih >= baslangic_tarihi,
+        Gider.user_id == current_user.id
     ).order_by(Gider.tarih.desc()).all()
 
-    # Aidatları getir
-    aidatlar = Aidat.query.filter(
-        Aidat.son_odeme_tarihi >= baslangic_tarihi
+    # Aidatları getir - kullanıcıya özel
+    aidatlar = Aidat.query.join(Daire).filter(
+        Aidat.son_odeme_tarihi >= baslangic_tarihi,
+        Daire.user_id == current_user.id
     ).all()
 
     form = GiderForm()
@@ -94,7 +96,8 @@ def gider_ekle():
             kategori=form.kategori.data,
             aciklama=form.aciklama.data,
             miktar=form.miktar.data,
-            tarih=datetime.utcnow()
+            tarih=datetime.utcnow(),
+            user_id=current_user.id
         )
         db.session.add(gider)
         db.session.commit()
@@ -105,7 +108,7 @@ def gider_ekle():
 @gider.route('/gider/sil/<int:id>')
 @login_required
 def gider_sil(id):
-    gider = Gider.query.get_or_404(id)
+    gider = Gider.query.filter_by(id=id, user_id=current_user.id).first_or_404()
     db.session.delete(gider)
     db.session.commit()
     flash('Gider silindi!', 'success')
@@ -122,8 +125,11 @@ def toplu_gider_sil():
             flash('Silinecek gider seçilmedi!', 'error')
             return redirect(url_for('gider.gider_listesi'))
         
-        # Seçilen giderleri sil
-        silinen_count = Gider.query.filter(Gider.id.in_(gider_ids)).delete(synchronize_session=False)
+        # Seçilen giderleri sil - kullanıcıya özel
+        silinen_count = Gider.query.filter(
+            Gider.id.in_(gider_ids),
+            Gider.user_id == current_user.id
+        ).delete(synchronize_session=False)
         db.session.commit()
         
         flash(f'{silinen_count} adet gider başarıyla silindi!', 'success')

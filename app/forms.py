@@ -52,6 +52,10 @@ class GiderForm(FlaskForm):
         ('temizlik', 'Temizlik'),
         ('asansör', 'Asansör'),
         ('tamirat', 'Tamirat'),
+        ('apartman_gorevlisi', 'Apartman Görevlisi'),
+        ('yonetici_maasi', 'Yönetici Maaşı'),
+        ('stopaj', 'Stopaj'),
+        ('sgk', 'SGK'),
         ('diğer', 'Diğer')
     ])
     aciklama = TextAreaField('Açıklama')
@@ -66,3 +70,33 @@ class DuyuruForm(FlaskForm):
     icerik = TextAreaField('İçerik', validators=[DataRequired()])
     onemli = BooleanField('Önemli Duyuru')
     submit = SubmitField('Duyuru Ekle')
+
+class AdminRegistrationForm(FlaskForm):
+    username = StringField('Kullanıcı Adı', validators=[
+        DataRequired(),
+        Length(min=4, max=25, message='Kullanıcı adı 4-25 karakter arasında olmalıdır')
+    ])
+    email = StringField('Email', validators=[
+        DataRequired(),
+        Email(message='Geçerli bir email adresi giriniz')
+    ])
+    apartman_ismi = StringField('Apartman İsmi', validators=[
+        DataRequired(),
+        Length(min=2, max=100, message='Apartman ismi 2-100 karakter arasında olmalıdır')
+    ])
+    password = PasswordField('Şifre', validators=[
+        DataRequired(),
+        Length(min=6, message='Şifre en az 6 karakter olmalıdır')
+    ])
+    password2 = PasswordField('Şifreyi Tekrarla', validators=[
+        DataRequired(),
+        EqualTo('password', message='Şifreler eşleşmiyor')
+    ])
+    submit = SubmitField('Yeni Yönetici Hesabı Oluştur')
+
+class ApartmanForm(FlaskForm):
+    apartman_ismi = StringField('Apartman İsmi', validators=[
+        DataRequired(),
+        Length(min=2, max=100, message='Apartman ismi 2-100 karakter arasında olmalıdır')
+    ])
+    submit = SubmitField('Kaydet')

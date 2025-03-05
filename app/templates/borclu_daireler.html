@@ -5,62 +5,146 @@
 {% block extra_css %}
 <style>
     .stats-card {
-        background: linear-gradient(45deg, #ff6b6b, #ff8787);
-        border-radius: 15px;
+        background: white;
+        border-radius: 12px;
         padding: 20px;
-        color: white;
-        margin-bottom: 20px;
-        box-shadow: 0 4px 20px rgba(255, 107, 107, 0.2);
+        margin-bottom: 24px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+        transition: all 0.2s ease;
+        border-top: 4px solid #ff6b6b;
+    }
+    
+    .stats-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    }
+    
+    .stats-icon {
+        font-size: 2rem;
+        margin-bottom: 12px;
+        color: #ff6b6b;
+    }
+    
+    .stats-title {
+        font-size: 0.9rem;
+        font-weight: 500;
+        margin-bottom: 5px;
+        color: #6c757d;
+    }
+    
+    .stats-value {
+        font-size: 1.8rem;
+        font-weight: 600;
+        margin-bottom: 0;
+        color: #343a40;
     }
     
     .card {
         border: none;
-        border-radius: 15px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        border-radius: 12px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+        margin-bottom: 24px;
     }
 
+    .card-header {
+        background: white;
+        padding: 16px 20px;
+        border-bottom: 1px solid #f1f1f1;
+    }
+    
+    .card-header h4 {
+        margin: 0;
+        color: #343a40;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        font-size: 1.1rem;
+    }
+    
+    .card-header h4 i {
+        margin-right: 10px;
+        color: #ff6b6b;
+    }
+
+    .table {
+        margin-bottom: 0;
+    }
+    
     .table thead th {
         background-color: #f8f9fa;
-        border-bottom: 2px solid #dee2e6;
+        border-bottom: 1px solid #eee;
+        padding: 12px 16px;
+        font-weight: 500;
+        color: #6c757d;
+        font-size: 0.9rem;
     }
 
+    .table tbody tr {
+        transition: all 0.2s;
+        border-bottom: 1px solid #f8f9fa;
+    }
+    
     .table tbody tr:hover {
         background-color: #f8f9fa;
-        transition: all 0.2s;
+    }
+    
+    .table td {
+        padding: 12px 16px;
+        vertical-align: middle;
     }
 
     .btn-detail {
-        background: linear-gradient(45deg, #4facfe, #00f2fe);
+        background: #4facfe;
         border: none;
         color: white;
-        padding: 8px 15px;
-        border-radius: 8px;
-        transition: all 0.3s;
+        padding: 8px 16px;
+        border-radius: 6px;
+        transition: all 0.2s;
+        font-weight: 500;
+        font-size: 0.85rem;
     }
 
     .btn-detail:hover {
+        background: #4295e5;
         transform: translateY(-2px);
-        box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);
     }
 
     .modal-content {
-        border-radius: 15px;
+        border-radius: 12px;
         overflow: hidden;
+        border: none;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .modal-header {
+        background: white;
+        color: #343a40;
+        padding: 16px 20px;
+        border-bottom: 1px solid #f1f1f1;
+    }
+    
+    .modal-header .btn-close {
+        opacity: 0.5;
+    }
+    
+    .modal-body {
+        padding: 20px;
     }
 
     .borc-ozet {
         background: #f8f9fa;
-        border-radius: 10px;
-        padding: 15px;
+        border-radius: 8px;
+        padding: 20px;
         margin-bottom: 20px;
     }
 
     .borc-ozet-item {
         display: flex;
         justify-content: space-between;
-        margin-bottom: 10px;
-        padding-bottom: 10px;
-        border-bottom: 1px solid #dee2e6;
+        margin-bottom: 12px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #eee;
     }
 
     .borc-ozet-item:last-child {
@@ -68,67 +152,164 @@
         margin-bottom: 0;
         padding-bottom: 0;
     }
+    
+    .borc-ozet-item span {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+    
+    .borc-ozet-item strong {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #343a40;
+    }
+    
+    .badge {
+        padding: 6px 10px;
+        border-radius: 4px;
+        font-weight: 500;
+        font-size: 0.75rem;
+    }
+    
+    .text-danger {
+        color: #dc3545 !important;
+    }
+    
+    .fw-bold {
+        font-weight: 600 !important;
+    }
+    
+    .section-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 16px;
+        color: #343a40;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+    }
+    
+    .empty-state i {
+        font-size: 3rem;
+        color: #28a745;
+        margin-bottom: 16px;
+    }
+    
+    .empty-state h5 {
+        font-size: 1.2rem;
+        color: #343a40;
+        margin-bottom: 8px;
+    }
+    
+    .empty-state p {
+        color: #6c757d;
+        max-width: 400px;
+        margin: 0 auto;
+        font-size: 0.9rem;
+    }
+    
+    .page-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 24px;
+        color: #343a40;
+        display: flex;
+        align-items: center;
+    }
+    
+    .page-title i {
+        margin-right: 10px;
+        color: #ff6b6b;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="stats-card">
-        <div class="row">
-            <div class="col-md-4">
-                <h5>Toplam Borçlu Daire</h5>
-                <h3>{{ borclu_daireler|length }}</h3>
+<div class="container">
+    <h2 class="page-title">
+        <i class="fas fa-exclamation-circle"></i>
+        Borçlu Daireler
+    </h2>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="stats-card text-center">
+                <i class="fas fa-home stats-icon"></i>
+                <p class="stats-title">TOPLAM BORÇLU DAİRE</p>
+                <h3 class="stats-value">{{ borclu_daireler|length }}</h3>
             </div>
-            <div class="col-md-4">
-                <h5>Toplam Borç</h5>
-                <h3>{{ "%.2f"|format(borclu_daireler|sum(attribute='toplam_borc')) }} ₺</h3>
+        </div>
+        <div class="col-md-4">
+            <div class="stats-card text-center">
+                <i class="fas fa-money-bill-wave stats-icon"></i>
+                <p class="stats-title">TOPLAM BORÇ</p>
+                <h3 class="stats-value">{{ "%.2f"|format(borclu_daireler|sum(attribute='toplam_borc')) }} ₺</h3>
             </div>
-            <div class="col-md-4">
-                <h5>Ortalama Borç</h5>
-                <h3>{{ "%.2f"|format(borclu_daireler|sum(attribute='toplam_borc') / borclu_daireler|length) }} ₺</h3>
+        </div>
+        <div class="col-md-4">
+            <div class="stats-card text-center">
+                <i class="fas fa-calculator stats-icon"></i>
+                <p class="stats-title">ORTALAMA BORÇ</p>
+                <h3 class="stats-value">
+                    {% if borclu_daireler|length > 0 %}
+                        {{ "%.2f"|format(borclu_daireler|sum(attribute='toplam_borc') / borclu_daireler|length) }} ₺
+                    {% else %}
+                        0.00 ₺
+                    {% endif %}
+                </h3>
             </div>
         </div>
     </div>
 
     <div class="card">
-        <div class="card-header bg-white py-3">
-            <h4 class="mb-0 text-danger">
+        <div class="card-header">
+            <h4>
                 <i class="fas fa-exclamation-triangle"></i> Aidat Borcu Olan Daireler
             </h4>
         </div>
         <div class="card-body">
-            <div class="table-responsive">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Daire</th>
-                            <th>Sakin</th>
-                            <th>Toplam Borç</th>
-                            <th>Ödenmemiş Aidat</th>
-                            <th>En Eski Borç</th>
-                            <th>İşlemler</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for borclu in borclu_daireler %}
-                        <tr>
-                            <td><strong>Daire {{ borclu.daire_no }}</strong></td>
-                            <td>{{ borclu.sakin_adi }}</td>
-                            <td class="text-danger fw-bold">{{ "%.2f"|format(borclu.toplam_borc) }} ₺</td>
-                            <td>{{ borclu.odenmemis_aidat_sayisi }} adet</td>
-                            <td>{{ borclu.en_eski_borc_tarihi.strftime('%d.%m.%Y') }}</td>
-                            <td>
-                                <button type="button" class="btn btn-detail" 
-                                        data-bs-toggle="modal" 
-                                        data-bs-target="#borcDetayModal{{ borclu.daire_no }}">
-                                    <i class="fas fa-eye me-1"></i> Detay
-                                </button>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+            {% if borclu_daireler|length > 0 %}
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>DAİRE</th>
+                                <th>SAKİN</th>
+                                <th>TOPLAM BORÇ</th>
+                                <th>ÖDENMEMİŞ AİDAT</th>
+                                <th>EN ESKİ BORÇ</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for borclu in borclu_daireler %}
+                            <tr>
+                                <td><strong>{{ borclu.daire_no }}</strong></td>
+                                <td>{{ borclu.sakin_adi }}</td>
+                                <td class="text-danger fw-bold">{{ "%.2f"|format(borclu.toplam_borc) }} ₺</td>
+                                <td>{{ borclu.odenmemis_aidat_sayisi }} adet</td>
+                                <td>{{ borclu.en_eski_borc_tarihi.strftime('%d.%m.%Y') }}</td>
+                                <td>
+                                    <button type="button" class="btn btn-detail" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#borcDetayModal{{ borclu.daire_no }}">
+                                        Detay
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-check-circle"></i>
+                    <h5>Borçlu Daire Bulunmuyor</h5>
+                    <p>Tüm dairelerin aidat ödemeleri güncel.</p>
+                </div>
+            {% endif %}
         </div>
     </div>
 </div>
@@ -138,7 +319,7 @@
 <div class="modal fade" id="borcDetayModal{{ borclu.daire_no }}" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <div class="modal-header bg-gradient">
+            <div class="modal-header">
                 <h5 class="modal-title">
                     <i class="fas fa-home me-2"></i>Daire {{ borclu.daire_no }} - {{ borclu.sakin_adi }}
                 </h5>
@@ -160,15 +341,15 @@
                     </div>
                 </div>
 
-                <h6 class="mb-3">Borç Detayları</h6>
+                <h6 class="section-title">Borç Detayları</h6>
                 <div class="table-responsive">
                     <table class="table">
                         <thead>
                             <tr>
-                                <th>Dönem</th>
-                                <th>Miktar</th>
-                                <th>Son Ödeme Tarihi</th>
-                                <th>Gecikme</th>
+                                <th>DÖNEM</th>
+                                <th>MİKTAR</th>
+                                <th>SON ÖDEME TARİHİ</th>
+                                <th>GECİKME</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -178,14 +359,27 @@
                                 <td class="text-danger fw-bold">{{ "%.2f"|format(borc.miktar) }} ₺</td>
                                 <td>{{ borc.son_odeme_tarihi.strftime('%d.%m.%Y') }}</td>
                                 <td>
-                                    <span class="badge {% if borc.gecikme_suresi > 30 %}bg-danger{% else %}bg-warning{% endif %}">
-                                        {{ borc.gecikme_suresi }} gün
+                                    <span class="badge {% if borc.gecikme_suresi > 30 %}bg-danger{% elif borc.gecikme_suresi > 0 %}bg-warning{% else %}bg-success{% endif %}">
+                                        {% if borc.gecikme_suresi > 0 %}
+                                            {{ borc.gecikme_suresi }} gün
+                                        {% else %}
+                                            Güncel
+                                        {% endif %}
                                     </span>
                                 </td>
                             </tr>
                             {% endfor %}
                         </tbody>
                     </table>
+                </div>
+                
+                <div class="d-flex justify-content-end mt-4">
+                    <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">
+                        Kapat
+                    </button>
+                    <a href="{{ url_for('aidat.aidat_listesi') }}" class="btn btn-primary">
+                        Aidat İşlemleri
+                    </a>
                 </div>
             </div>
         </div>
